@@ -4,20 +4,13 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import Giscus from '@/components/Giscus.astro';
 import { collectionLabel, collectionNames, formatDate, getEntryUrl, getExplicitRelated, getTagRelated, getUpstream, type CollectionName, type AnyEntry } from '@/utils/content';
 
-export async function getStaticPaths() {
-  const groups = await Promise.all(
-    collectionNames.map(async (collection) => {
-      const entries = await getCollection(collection, ({ data }) => !data.draft);
-      return entries.map((entry) => ({
-        params: { collection, slug: entry.id },
-        props: { entry }
-      }));
-    })
-  );
-  return groups.flat();
-}
+const { collection, slug } = Astro.params;
+if (!collection || !slug) return new Response('Not found', { status: 404 });
 
-const { entry } = Astro.props;
+const entries = await getCollection(collection as CollectionName, ({ data }) => !data.draft);
+const entry = entries.find((e) => e.id === slug);
+if (!entry) return new Response('Not found', { status: 404 });
+
 const { Content } = await render(entry);
 const title = entry.data.seoTitle ?? entry.data.title;
 const description = entry.data.seoDescription ?? entry.data.description;
