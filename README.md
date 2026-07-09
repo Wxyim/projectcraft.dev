@@ -1,6 +1,6 @@
 # Astro Digital Garden Starter
 
-一个面向个人知识库和作品集的 Astro starter。内容全部写在 `src/content`，页面、列表、RSS、搜索、SEO、暗黑模式和评论组件已经配置好。
+一个面向个人知识库和作品集的 Astro starter。内容全部写在 `src/content`，页面、列表、RSS、搜索、SEO、暗黑模式、评论组件和 Turnstile 验证已经配置好。
 
 ## 开始
 
@@ -40,21 +40,32 @@ status: seedling
 
 可选值：`seedling`、`budding`、`evergreen`。
 
+Markdown 脚注：
+
+```markdown
+正文中需要注释的地方加[^1]，页面底部自动汇集脚注内容。
+
+[^1]: 这是脚注的说明文字。
+```
+
 ## 站点配置
 
 编辑 `src/config/site.ts`：
 
-- `title`、`description`、`url`、`author`
-- Giscus 的 `repo`、`repoId`、`categoryId`
+- `title`、`description`、`url`、`author`、`github`、`lang`
+- Giscus 评论：`repo`、`repoId`、`category`、`categoryId` 等
+- 导航栏：`navItems`
+- 各 collection 的标题和描述：`collections`
 
 同时把 `astro.config.mjs` 的 `site` 和 `public/robots.txt` 的 Sitemap 域名改成你的正式域名。
 
-## Cloudflare Pages
+## 部署到 Cloudflare Workers
 
-Cloudflare Pages 使用：
+项目基于 `@astrojs/cloudflare` 适配器，以 SSR 模式运行在 Cloudflare Workers 上。
 
-- Build command: `npm run build`
-- Build output directory: `dist`
-- Node.js version: `24`
+```bash
+npm run preview   # 本地预览（wrangler dev）
+npm run deploy    # 构建并部署（wrangler deploy）
+```
 
-项目已包含 `wrangler.toml` 和 `public/_headers`。
+`wrangler.toml` 已包含基础配置，`public/_headers` 已配置安全头和静态资源缓存。
