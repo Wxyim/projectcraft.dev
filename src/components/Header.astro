@@ -1,6 +1,6 @@
 ---
 import { site } from '@/config/site';
-import { Sun, Moon } from '@lucide/astro';
+import { Sun, Moon, ArrowUpRight } from '@lucide/astro';
 
 const pathname = Astro.url.pathname;
 ---
@@ -14,7 +14,7 @@ const pathname = Astro.url.pathname;
     <div class="nav-links">
       <a href="/garden/" aria-current={pathname === '/garden/' ? 'page' : undefined}>数字花园</a>
       <a href="/search/" aria-current={pathname === '/search/' ? 'page' : undefined}>Search</a>
-      <a href={site.github} rel="noreferrer" target="_blank">GitHub</a>
+      <a href={site.github} rel="noreferrer" target="_blank">GitHub<ArrowUpRight size={12} stroke-width={2} /></a>
       <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode" data-theme-toggle>
         <span class="icon-sun" aria-hidden="true"><Sun size={18} /></span>
         <span class="icon-moon" aria-hidden="true"><Moon size={18} /></span>

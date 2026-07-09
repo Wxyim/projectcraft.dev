@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Giscus from '@/components/Giscus.astro';
+import { ArrowUpRight } from '@lucide/astro';
 import { collectionLabel, collectionNames, formatDate, getEntryUrl, getExplicitRelated, getTagRelated, getUpstream, type CollectionName, type AnyEntry } from '@/utils/content';
 
 const { collection, slug } = Astro.params;
@@ -61,8 +62,8 @@ const upstream = getUpstream(entry as AnyEntry, allEntries);
           )}
         </nav>
       )}
-      <p><a href={getEntryUrl(entry)}>Permalink</a> · <small>内容采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license" target="_blank">CC BY-SA 4.0</a> 许可</small></p>
-      <Giscus />
+      <p><a href={getEntryUrl(entry)}>Permalink</a> · <small>内容采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license" target="_blank">CC BY-SA 4.0 <ArrowUpRight size={12} stroke-width={2} /></a> 许可</small></p>
+      <div class="giscus-wrapper"><Giscus /></div>
     </footer>
   </article>
 </BaseLayout>
