@@ -1,0 +1,627 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { collections } from '@/config/site';
+import { getPublishedCollection, getEntryUrl, buildTagTree, getTagRelated, getExplicitRelated, getUpstream, type AnyEntry } from '@/utils/content';
+
+const meta = collections.garden;
+const gardenEntries = await getPublishedCollection('garden');
+const notesEntries = await getPublishedCollection('notes');
+const allEntries: AnyEntry[] = [...gardenEntries, ...notesEntries];
+
+// Utility: sort entries: garden first, then by maturity within each type
+const collOrder: Record<string, number> = { garden: 0, notes: 1 };
+const statusOrder: Record<string, number> = { evergreen: 0, budding: 1, seedling: 2 };
+function sortByTypeMaturity(a: AnyEntry, b: AnyEntry): number {
+  const ca = collOrder[a.collection] ?? 2;
+  const cb = collOrder[b.collection] ?? 2;
+  if (ca !== cb) return ca - cb;
+  const sa: string = (a.data as any).status || (a.collection === 'garden' ? 'seedling' : '');
+  const sb: string = (b.data as any).status || (b.collection === 'garden' ? 'seedling' : '');
+  return (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
+}
+
+allEntries.sort(sortByTypeMaturity);
+
+// Build tree (each branch also sorted by type + maturity)
+const tree = buildTagTree(allEntries).map((branch) => ({
+  ...branch,
+  entries: [...branch.entries].sort(sortByTypeMaturity)
+}));
+
+// Connection stats
+const connMap = new Map<string, { explicit: AnyEntry[]; tagRelated: AnyEntry[]; upstream: AnyEntry[]; overlapMap: Map<string, number> }>();
+for (const entry of allEntries) {
+  const explicit = getExplicitRelated(entry, allEntries);
+  const tagRelated = getTagRelated(entry, allEntries, 8);
+  const upstream = getUpstream(entry, allEntries);
+  const overlapMap = new Map<string, number>();
+  for (const rel of tagRelated) {
+    const overlap = rel.data.tags.filter((t) => entry.data.tags.includes(t)).length;
+    overlapMap.set(rel.id, overlap);
+  }
+  connMap.set(`${entry.collection}/${entry.id}`, { explicit, tagRelated, upstream, overlapMap });
+}
+
+function getEntryKey(e: AnyEntry) { return `${e.collection}/${e.id}`; }
+function getConn(e: AnyEntry) { return connMap.get(getEntryKey(e))!; }
+function totalConn(e: AnyEntry): number {
+  const c = getConn(e);
+  return new Set([...c.explicit, ...c.tagRelated, ...c.upstream].map(getEntryKey)).size;
+}
+function outgoingConn(e: AnyEntry): number {
+  const c = getConn(e);
+  return new Set([...c.explicit, ...c.tagRelated].map(getEntryKey)).size;
+}
+
+function entryStatus(entry: AnyEntry): string {
+  return (entry.data as any).status || (entry.collection === 'notes' ? '' : 'seedling');
+}
+function statusIcon(entry: AnyEntry): string {
+  const s = entryStatus(entry);
+  if (s === 'evergreen') return '🌳';
+  if (s === 'budding') return '🌿';
+  if (s === 'seedling') return '🌱';
+  return '📝';
+}
+function statusLabel(s: string): string {
+  if (s === 'evergreen') return 'Evergreen';
+  if (s === 'budding') return 'Budding';
+  if (s === 'seedling') return 'Seedling';
+  if (!s) return 'Note';
+  return s;
+}
+
+// Count entries per status
+const gardenWithStatus = gardenEntries.filter((e) => (e.data as any).status);
+const seedlingCount = gardenWithStatus.filter((e) => (e.data as any).status === 'seedling').length;
+const buddingCount = gardenWithStatus.filter((e) => (e.data as any).status === 'budding').length;
+const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status === 'evergreen').length;
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+  <section class="container hero">
+    <h1 class="page-title">{meta.title}</h1>
+    <p class="lede">{meta.description}</p>
+    <!-- Growth lifecycle legend -->
+    <div class="growth-legend">
+      <div class="growth-step">
+        <span class="growth-icon">🌱</span>
+        <span class="growth-label">Seedling</span>
+        <span class="growth-desc">刚种下的想法，还在生长</span>
+      </div>
+      <span class="growth-arrow">→</span>
+      <div class="growth-step">
+        <span class="growth-icon">🌿</span>
+        <span class="growth-label">Budding</span>
+        <span class="growth-desc">逐渐成形，持续完善</span>
+      </div>
+      <span class="growth-arrow">→</span>
+      <div class="growth-step">
+        <span class="growth-icon">🌳</span>
+        <span class="growth-label">Evergreen</span>
+        <span class="growth-desc">成熟沉淀，长期维护</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Status overview -->
+  <section class="container section">
+    <div class="section-heading">
+      <h2>Garden Status</h2>
+    </div>
+    <div class="status-bar">
+      <span class="status-chip seedling">🌱 {seedlingCount} seedling</span>
+      <span class="status-chip budding">🌿 {buddingCount} budding</span>
+      <span class="status-chip evergreen">🌳 {evergreenCount} evergreen</span>
+      <span class="status-chip note">📝 {notesEntries.length} notes</span>
+    </div>
+    <p class="section-lede" style="margin-top: 10px;">内容从刚种下的想法开始，随着每次更新逐渐成形，最终沉淀为长期维护的成熟笔记。</p>
+  </section>
+
+  <!-- Tabbed views -->
+  <section class="container section">
+    <div class="tab-bar">
+      <button class="tab" data-tab="tree">🗂️ Tree</button>
+      <button class="tab" data-tab="graph">🔗 Graph</button>
+      <button class="tab" data-tab="list">📋 List</button>
+      <span class="count-badge">{allEntries.length} cards</span>
+    </div>
+
+    <!-- Tree View -->
+    <div class="tab-panel" id="tab-tree">
+      <p class="section-lede">按标签分组的卡片树，同一主题的知识聚合在一起。</p>
+      <div class="tree">
+        {tree.map((branch) => (
+          <div class="tree-branch">
+            <div class="tree-branch-header">
+              <span class="tree-dot" aria-hidden="true"></span>
+              <h3>{branch.tag}</h3>
+              <span class="count-badge">{branch.entries.length}</span>
+            </div>
+            <div class="tree-leaves">
+              {branch.entries.map((entry) => {
+                const count = totalConn(entry);
+                const st = entryStatus(entry);
+                const lastDate = entry.data.updatedDate ?? entry.data.pubDate;
+                const daysAgo = Math.floor((Date.now() - lastDate.valueOf()) / 86400000);
+                const tendedLabel = daysAgo === 0 ? '今天打理' : `${daysAgo} 天前打理`;
+                return (
+                  <a class="tree-leaf" href={getEntryUrl(entry)} title={tendedLabel}>
+                    <span class="leaf-status" title={statusLabel(st)}>{statusIcon(entry)}</span>
+                    <span class="leaf-title">{entry.data.title}</span>
+                    {st && st !== 'evergreen' && <span class={`growth-dot ${st}`} title={statusLabel(st)}></span>}
+                    {entry.data.updatedDate && <span class="tended-badge" title={tendedLabel}>{daysAgo === 0 ? '今天' : `${daysAgo}d`}</span>}
+                    <span class="link-count strength-{Math.min(count, 5)}" title={`${count} connections`}>{count}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Graph View -->
+    <div class="tab-panel" id="tab-graph">
+      <p class="section-lede">卡片之间的关联关系：related 引用和标签重叠形成的知识网络。</p>
+      <div class="graph" id="graph-container">
+        {allEntries.map((entry) => {
+          const c = getConn(entry);
+          const allRelated = [...new Set([...c.explicit, ...c.tagRelated])];
+          if (allRelated.length === 0 && c.upstream.length === 0) return null;
+          return (
+            <div class="graph-node" data-expanded="false">
+              <div class="graph-node-header">
+                <span class="leaf-status">{statusIcon(entry)}</span>
+                <a class="graph-node-title-link" href={getEntryUrl(entry)}>{entry.data.title}</a>
+                <span class="graph-node-badge">{allRelated.length + c.upstream.length}</span>
+                <button class="graph-toggle-btn" type="button" aria-label="Toggle connections">▸</button>
+              </div>
+              <div class="graph-node-body" hidden>
+                {allRelated.length > 0 && (
+                  <div class="graph-links">
+                    <span class="graph-label">→ related</span>
+                    {allRelated.map((r) => {
+                      const overlap = c.overlapMap.get(r.id) ?? 0;
+                      return (
+                        <a href={getEntryUrl(r)} class="graph-pill strength-{Math.min(overlap, 4)}" title={overlap > 0 ? `tag overlap: ${overlap}` : ''}>
+                          {r.data.title}
+                          {overlap > 1 && <small> ×{overlap}</small>}
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+                {c.upstream.length > 0 && (
+                  <div class="graph-links">
+                    <span class="graph-label">← upstream</span>
+                    {c.upstream.map((r) => (
+                      <a href={getEntryUrl(r)} class="graph-pill">{r.data.title}</a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }).filter(Boolean)}
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div class="tab-panel" id="tab-list">
+      <p class="section-lede">全部卡片的表格视图，按状态、日期、连接数一览。</p>
+      <div class="gardentable-wrapper">
+        <table class="gardentable">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Planted</th>
+              <th>Last tended</th>
+              <th>Tags</th>
+              <th class="conn-th">→</th>
+              <th class="conn-th">←</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allEntries.map((entry) => {
+              const c = getConn(entry);
+              const st = entryStatus(entry);
+              return (
+                <tr class={totalConn(entry) === 0 ? 'orphan-row' : ''}>
+                  <td>{statusIcon(entry)}</td>
+                  <td><a href={getEntryUrl(entry)}>{entry.data.title}</a></td>
+                  <td><span class="type-chip">{entry.collection}</span></td>
+                  <td>
+                    {st ? (
+                      <span class={`status-chip ${st}`}>
+                        {statusLabel(st)}
+                      </span>
+                    ) : (
+                      <span class="type-chip">—</span>
+                    )}
+                  </td>
+                  <td class="date-cell">
+                    {new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' }).format(entry.data.pubDate)}
+                  </td>
+                  <td class="date-cell">
+                    {entry.data.updatedDate
+                      ? new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' }).format(entry.data.updatedDate)
+                      : '—'}
+                  </td>
+                  <td>{entry.data.tags.map((t) => <span class="tag">{t}</span>)}</td>
+                  <td class="conn-cell">{outgoingConn(entry)}</td>
+                  <td class="conn-cell">{c.upstream.length}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  // Restore saved tab immediately (before paint)
+  const activeTab = sessionStorage.getItem('garden-tab') || 'tree';
+  document.querySelector('.tab[data-tab="tree"]')?.classList.remove('active');
+  document.querySelector('.tab[data-tab="graph"]')?.classList.remove('active');
+  document.querySelector('.tab[data-tab="list"]')?.classList.remove('active');
+  document.querySelector('.tab[data-tab="' + activeTab + '"]')?.classList.add('active');
+  document.getElementById('tab-tree')?.classList.remove('active');
+  document.getElementById('tab-graph')?.classList.remove('active');
+  document.getElementById('tab-list')?.classList.remove('active');
+  document.getElementById('tab-' + activeTab)?.classList.add('active');
+
+  // Tab switching with persistence
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var name = tab.dataset.tab;
+      sessionStorage.setItem('garden-tab', name);
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('tab-' + name)?.classList.add('active');
+    });
+  });
+
+  // Graph toggle
+  document.querySelectorAll('.graph-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var node = btn.closest('.graph-node');
+      if (!node) return;
+      var body = node.querySelector('.graph-node-body');
+      if (!body) return;
+      var expanded = node.dataset.expanded === 'true';
+      node.dataset.expanded = expanded ? 'false' : 'true';
+      body.hidden = expanded;
+    });
+  });
+</script>
+
+<style>
+  /* Growth lifecycle */
+  .growth-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-soft);
+  }
+
+  .growth-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 80px;
+  }
+
+  .growth-icon {
+    font-size: 1.4rem;
+  }
+
+  .growth-label {
+    font-weight: 650;
+    font-size: 0.85rem;
+  }
+
+  .growth-desc {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .growth-arrow {
+    color: var(--muted);
+    font-size: 1.1rem;
+    font-weight: 300;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--bg);
+  }
+
+  .status-chip.seedling { border-color: #d4a574; color: #b8860b; }
+  .status-chip.budding { border-color: #5eacb5; color: #3d808a; }
+  .status-chip.evergreen { border-color: #4a9a4a; color: #2d7a2d; background: #e8f5e8; }
+  .status-chip.note { border-color: var(--line); color: var(--muted); }
+
+  /* Growth dot indicator in tree */
+  .growth-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .growth-dot.seedling { background: #d4a574; }
+  .growth-dot.budding { background: #5eacb5; }
+  .growth-dot.evergreen { background: #4a9a4a; }
+
+  .tended-badge {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+
+  .tab {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-soft);
+    color: var(--muted);
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tab:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .tab.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .tab-bar .count-badge {
+    margin-left: auto;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Tree */
+  .tree { display: grid; gap: 24px; }
+
+  .tree-branch {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-soft);
+    overflow: hidden;
+  }
+
+  .tree-branch-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 650;
+  }
+
+  .tree-branch-header h3 { margin: 0; font-size: 1.05rem; flex: 1; }
+
+  .tree-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .count-badge { color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+
+  .tree-leaves {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .tree-leaf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-soft);
+    padding: 10px 14px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 550;
+    transition: background 0.15s;
+  }
+
+  .tree-leaf:hover { background: var(--accent-soft); color: var(--accent); }
+
+  .leaf-status { flex-shrink: 0; font-size: 0.9rem; }
+  .leaf-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .link-count {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 650;
+    padding: 1px 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    min-width: 22px;
+    text-align: center;
+  }
+
+  .link-count.strength-0 { background: var(--bg); color: var(--muted); font-weight: 500; }
+
+  /* Graph */
+  .graph { display: grid; gap: 10px; }
+
+  .graph-node {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-soft);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .graph-node[data-expanded="true"] { border-color: var(--accent); }
+
+  .graph-node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .graph-node-title-link {
+    font-weight: 650;
+    text-decoration: none;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .graph-node-title-link:hover { color: var(--accent); }
+
+  .graph-node-badge {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 650;
+    padding: 1px 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .graph-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: all 0.15s;
+  }
+
+  .graph-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .graph-node[data-expanded="true"] .graph-toggle-btn { transform: rotate(90deg); }
+
+  .graph-node-body { border-top: 1px solid var(--line); padding: 12px 16px; }
+
+  .graph-links { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .graph-links + .graph-links { margin-top: 8px; }
+
+  .graph-label { color: var(--muted); font-size: 0.82rem; flex-shrink: 0; }
+
+  .graph-pill {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    background: var(--bg);
+    font-weight: 500;
+  }
+
+  .graph-pill.strength-1 { font-weight: 400; opacity: 0.7; }
+  .graph-pill.strength-2 { opacity: 0.85; }
+  .graph-pill.strength-3 { font-weight: 600; border-color: var(--accent); }
+  .graph-pill.strength-4 { font-weight: 700; border-color: var(--accent); background: var(--accent-soft); }
+  .graph-pill small { font-size: 0.7em; color: var(--accent); margin-left: 1px; }
+  .graph-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Table List */
+  .gardentable-wrapper { overflow-x: auto; }
+
+  .gardentable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .gardentable th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .gardentable td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+
+  .gardentable tbody tr:hover { background: var(--bg-soft); }
+  .gardentable tbody tr:last-child td { border-bottom: none; }
+  .gardentable a { font-weight: 600; text-decoration: none; }
+  .gardentable a:hover { color: var(--accent); }
+
+  .type-chip {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .date-cell { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+  .conn-th { text-align: center; }
+  .conn-cell { text-align: center; font-weight: 600; color: var(--accent); font-size: 0.85rem; }
+  .orphan-row td { opacity: 0.55; }
+</style>

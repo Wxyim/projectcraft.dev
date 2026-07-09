@@ -1,0 +1,103 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site, nowItems } from '@/config/site';
+import { getEntryUrl, getPublishedCollection, type AnyEntry } from '@/utils/content';
+
+const byFeature = (a: AnyEntry, b: AnyEntry) => {
+  const orderA = a.data.order ?? 999;
+  const orderB = b.data.order ?? 999;
+  return orderA - orderB || b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+};
+
+const projects = (await getPublishedCollection('projects')).filter((entry) => entry.data.featured).sort(byFeature).slice(0, 4);
+const notes = (await getPublishedCollection('notes')).slice(0, 8);
+const articles = (await getPublishedCollection('articles')).filter((entry) => entry.data.featured).sort(byFeature).slice(0, 3);
+const resources = (await getPublishedCollection('resources')).filter((entry) => entry.data.featured).sort(byFeature).slice(0, 4);
+const weekly = (await getPublishedCollection('weekly')).slice(0, 4);
+---
+
+<BaseLayout title={site.title} description={site.description}>
+  <section class="container home-hero">
+    <h1>Craft Better Projects</h1>
+    <p class="lede">把零散的想法种进数字花园，让知识生根、连接、生长。</p>
+    <div class="hero-actions">
+      <a class="button button-primary" href="/projects/">Explore Projects</a>
+      <a class="button" href="/notes/">Read Notes</a>
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Projects</h2>
+      <a href="/projects/">All Projects</a>
+    </div>
+    <p class="section-lede">花园里结出的果实，一个个完整打磨的作品。</p>
+    <div class="feature-grid feature-grid-4">
+      {projects.map((entry) => (
+        <a class="feature-tile" href={getEntryUrl(entry)}>
+          <span class="tile-marker" aria-hidden="true"></span>
+          <strong>{entry.data.title}</strong>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Notes</h2>
+      <a href="/notes/">All Notes</a>
+    </div>
+    <p class="section-lede">每一张卡片都是数字花园里的一颗种子。</p>
+    <div class="topic-list">
+      {notes.map((entry) => <a href={getEntryUrl(entry)} class="topic-pill">{entry.data.title}</a>)}
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Articles</h2>
+      <a href="/articles/">All Articles</a>
+    </div>
+    <p class="section-lede">慢下来写，让每棵知识树经得起时间的推敲。</p>
+    <div class="link-list">
+      {articles.map((entry) => <a href={getEntryUrl(entry)}>{entry.data.title}</a>)}
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Resources</h2>
+      <a href="/resources/">All Resources</a>
+    </div>
+    <p class="section-lede">为花园挑选的好工具，精心筛选的养料与水源。</p>
+    <div class="link-list resource-list">
+      {resources.map((entry) => <a href={getEntryUrl(entry)}>{entry.data.title}</a>)}
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Weekly</h2>
+      <a href="/weekly/">All Weeks</a>
+    </div>
+    <p class="section-lede">园丁日志，记录花园里每周的生长与变化。</p>
+    <div class="link-list">
+      {weekly.map((entry) => <a href={getEntryUrl(entry)}>{entry.data.title}</a>)}
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Now</h2>
+    </div>
+    <p class="section-lede">园丁此刻正在打理的事。</p>
+    <div class="now-grid">
+      {nowItems.map((item) => (
+        <article>
+          <p>{item.emoji} {item.label}</p>
+          <strong>{item.text}</strong>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

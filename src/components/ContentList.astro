@@ -1,0 +1,28 @@
+---
+import { collectionLabel, formatDate, getEntryUrl, type AnyEntry } from '@/utils/content';
+
+interface Props {
+  entries: AnyEntry[];
+  showCollection?: boolean;
+}
+
+const { entries, showCollection = false } = Astro.props;
+---
+
+<div class="entry-list">
+  {entries.map((entry) => (
+    <article class="entry">
+      <div class="meta">
+        <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate)}</time>
+        {showCollection && <span>{collectionLabel(entry.collection)}</span>}
+      </div>
+      <h2><a href={getEntryUrl(entry)}>{entry.data.title}</a></h2>
+      {entry.data.description && <p>{entry.data.description}</p>}
+      {entry.data.tags.length > 0 && (
+        <div class="tags" aria-label="Tags">
+          {entry.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+        </div>
+      )}
+    </article>
+  ))}
+</div>

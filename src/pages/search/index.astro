@@ -1,0 +1,74 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Search" description="Search all projects, notes, articles, resources, weekly logs, and garden notes.">
+  <section class="container hero">
+    <h1 class="page-title">Search</h1>
+    <p class="lede">全文搜索所有已发布 Markdown 内容。</p>
+  </section>
+  <section class="container section">
+    <input class="search-box" type="search" placeholder="输入关键词..." aria-label="Search" data-search-input />
+    <div class="entry-list" data-search-results style="margin-top: 16px;"></div>
+  </section>
+</BaseLayout>
+
+<script>
+  type SearchItem = {
+    title: string;
+    description: string;
+    body: string;
+    url: string;
+    collection: string;
+    tags: string[];
+    date: string;
+  };
+
+  const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+  const results = document.querySelector<HTMLElement>('[data-search-results]');
+  const response = await fetch('/search.json');
+  const index = await response.json() as SearchItem[];
+
+  // Restore last query
+  const savedQuery = sessionStorage.getItem('search-query') || '';
+  if (input && savedQuery) {
+    input.value = savedQuery;
+  }
+  input?.focus();
+  input?.setSelectionRange(input.value.length, input.value.length);
+
+  function score(item: SearchItem, query: string) {
+    const haystack = `${item.title} ${item.description} ${item.tags.join(' ')} ${item.body}`.toLowerCase();
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return 0;
+    return terms.reduce((total, term) => total + (haystack.includes(term) ? 1 : 0), 0);
+  }
+
+  function render(query = '') {
+    if (!results) return;
+    const matches = index
+      .map((item) => ({ item, score: score(item, query) }))
+      .filter((match) => match.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+
+    results.innerHTML = matches.length
+      ? matches.map(({ item }) => `
+        <article class="entry">
+          <div class="meta"><span>${item.collection}</span><time>${item.date}</time></div>
+          <h2><a href="${item.url}">${item.title}</a></h2>
+          <p>${item.description}</p>
+          <div class="tags">${item.tags.map((tag) => `<span class="tag">${tag}</span>`).join('')}</div>
+        </article>
+      `).join('')
+      : query
+        ? '<p class="lede">没有找到匹配内容。</p>'
+        : '<p class="lede">输入关键词开始搜索。</p>';
+  }
+
+  input?.addEventListener('input', () => {
+    sessionStorage.setItem('search-query', input.value);
+    render(input?.value ?? '');
+  });
+  render(input?.value ?? '');
+</script>

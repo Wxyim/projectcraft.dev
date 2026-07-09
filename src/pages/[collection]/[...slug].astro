@@ -1,0 +1,114 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Giscus from '@/components/Giscus.astro';
+import { collectionLabel, collectionNames, formatDate, getEntryUrl, getExplicitRelated, getTagRelated, getUpstream, type CollectionName, type AnyEntry } from '@/utils/content';
+
+export async function getStaticPaths() {
+  const groups = await Promise.all(
+    collectionNames.map(async (collection) => {
+      const entries = await getCollection(collection, ({ data }) => !data.draft);
+      return entries.map((entry) => ({
+        params: { collection, slug: entry.id },
+        props: { entry }
+      }));
+    })
+  );
+  return groups.flat();
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const title = entry.data.seoTitle ?? entry.data.title;
+const description = entry.data.seoDescription ?? entry.data.description;
+
+const allEntries: AnyEntry[] = [
+  ...(await getCollection('notes', ({ data }) => !data.draft)),
+  ...(await getCollection('garden', ({ data }) => !data.draft)),
+];
+const related = [...getExplicitRelated(entry as AnyEntry, allEntries), ...getTagRelated(entry as AnyEntry, allEntries, 4)].filter(
+  (e, i, arr) => arr.findIndex((x) => x.id === e.id) === i
+).slice(0, 6);
+const upstream = getUpstream(entry as AnyEntry, allEntries);
+---
+
+<BaseLayout title={title} description={description} image={entry.data.image} type="article">
+  <article class="container prose">
+    <div class="meta">
+      <a href={`/${entry.collection}/`}>{collectionLabel(entry.collection as CollectionName)}</a>
+      <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate)}</time>
+      {entry.data.updatedDate && <span>Updated {formatDate(entry.data.updatedDate)}</span>}
+    </div>
+    <h1>{entry.data.title}</h1>
+    {entry.data.description && <p class="lede">{entry.data.description}</p>}
+    {entry.data.tags.length > 0 && (
+      <div class="tags" aria-label="Tags" style="margin-top: 8px;">
+        {entry.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+      </div>
+    )}
+    <Content />
+    <footer class="prose-footer">
+      {(related.length > 0 || upstream.length > 0) && (
+        <nav class="related-notes" aria-label="Related notes">
+          {upstream.length > 0 && (
+            <div class="related-group">
+              <h3>← 上游知识</h3>
+              <div class="related-links">
+                {upstream.map((r) => <a href={getEntryUrl(r)}>{r.data.title}</a>)}
+              </div>
+            </div>
+          )}
+          {related.length > 0 && (
+            <div class="related-group">
+              <h3>→ 相关笔记</h3>
+              <div class="related-links">
+                {related.map((r) => <a href={getEntryUrl(r)}>{r.data.title}</a>)}
+              </div>
+            </div>
+          )}
+        </nav>
+      )}
+      <p><a href={getEntryUrl(entry)}>Permalink</a> · <small>内容采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license" target="_blank">CC BY-SA 4.0</a> 许可</small></p>
+      <Giscus />
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .related-notes {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .related-group {
+    margin-bottom: 14px;
+  }
+
+  .related-group h3 {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .related-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .related-links a {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    background: var(--bg-soft);
+  }
+
+  .related-links a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+</style>

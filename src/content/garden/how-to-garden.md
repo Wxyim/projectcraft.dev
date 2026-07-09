@@ -1,0 +1,40 @@
+---
+title: "如何打理数字花园"
+description: "从种子到常青树：数字花园的写作方法与成长路径。"
+pubDate: 2026-07-09
+updatedDate: 2026-07-09
+tags: ["Garden", "Workflow", "Knowledge"]
+related: ["notes/markdown-first", "notes/ai"]
+status: evergreen
+draft: false
+---
+
+## 什么是数字花园
+
+数字花园不同于博客——它不按时间线排列，而是以**知识网络**的方式组织。每篇笔记是一颗种子，随着持续更新慢慢生长。
+
+## 三个阶段
+
+- 🌱 **Seedling** — 刚种下的想法，不完整也没关系
+- 🌿 **Budding** — 逐渐成形，结构清晰，内容在完善
+- 🌳 **Evergreen** — 成熟沉淀，长期维护，经得起时间推敲
+
+## 怎么开始
+
+1. 在 `src/content/garden/` 新建 `.md` 文件
+2. 写上 `status: seedling`，不用一次写完
+3. 添加 `tags` 让它自动进入知识树
+4. 用 `related` 连接其他卡片，建立知识网络
+5. 每次更新时修改 `updatedDate`，标记生长足迹
+
+## 连接的力量
+
+花园的价值在于**连接**。一张孤立的卡片是信息，一张被多张卡片引用的卡片是知识。
+
+- 多用 `related` 显式声明关联
+- 共享 `tags` 会自动建立隐式连接
+- 被其他卡片引用时，你会看到 upstream 上下游关系
+
+## 持续打理
+
+数字花园不是一次性的写作，而是**长期的习惯**。每次学到新东西，回来更新相关的卡片。Seedling 慢慢变成 Budding，最终沉淀为 Evergreen。

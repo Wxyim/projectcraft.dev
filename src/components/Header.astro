@@ -1,0 +1,39 @@
+---
+import { site } from '@/config/site';
+import { Sun, Moon } from '@lucide/astro';
+
+const pathname = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <nav class="container nav" aria-label="Primary navigation">
+    <a class="brand" href="/" aria-label={site.title}>
+      <img src="/logo.png" alt="" width="32" height="32" />
+      <span>{site.title}</span>
+    </a>
+    <div class="nav-links">
+      <a href="/garden/" aria-current={pathname === '/garden/' ? 'page' : undefined}>数字花园</a>
+      <a href="/search/" aria-current={pathname === '/search/' ? 'page' : undefined}>Search</a>
+      <a href={site.github} rel="noreferrer" target="_blank">GitHub</a>
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode" data-theme-toggle>
+        <span class="icon-sun" aria-hidden="true"><Sun size={18} /></span>
+        <span class="icon-moon" aria-hidden="true"><Moon size={18} /></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const button = document.querySelector('[data-theme-toggle]');
+  const updateLabel = () => {
+    const dark = document.documentElement.classList.contains('dark');
+    button?.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  };
+  updateLabel();
+  button?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const dark = root.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    updateLabel();
+  });
+</script>

@@ -1,0 +1,19 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContentList from '@/components/ContentList.astro';
+import { collections } from '@/config/site';
+import { getPublishedCollection } from '@/utils/content';
+
+const meta = collections.resources;
+const entries = await getPublishedCollection('resources');
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+  <section class="container hero">
+    <h1 class="page-title">{meta.title}</h1>
+    <p class="lede">{meta.description}</p>
+  </section>
+  <section class="container section">
+    <ContentList entries={entries} />
+  </section>
+</BaseLayout>
