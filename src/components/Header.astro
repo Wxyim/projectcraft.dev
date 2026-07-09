@@ -35,5 +35,6 @@ const pathname = Astro.url.pathname;
     const dark = root.classList.toggle('dark');
     localStorage.setItem('theme', dark ? 'dark' : 'light');
     updateLabel();
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: dark ? 'dark' : 'light' } }));
   });
 </script>

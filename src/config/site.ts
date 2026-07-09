@@ -7,15 +7,15 @@ export const site = {
   lang: 'zh-CN',
   locale: 'zh_CN',
   giscus: {
-    repo: '',
-    repoId: '',
+    repo: 'Wxyim/comments-for-projectcraft.dev',
+    repoId: 'R_kgDOTS37Cw',
     category: 'Announcements',
-    categoryId: '',
+    categoryId: 'DIC_kwDOTS37C84DA0Me',
     mapping: 'pathname',
     strict: '0',
     reactionsEnabled: '1',
     emitMetadata: '0',
-    inputPosition: 'bottom',
+    inputPosition: 'top',
     lang: 'zh-CN'
   }
 } as const;
