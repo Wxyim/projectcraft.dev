@@ -1,0 +1,33 @@
+---
+interface Props {
+  /** Callback receives the Turnstile token after successful verification */
+  onSuccess?: string;
+  /** CSS class for the wrapper */
+  class?: string;
+}
+
+const { onSuccess, class: className } = Astro.props;
+const siteKey = '0x4AAAAAADylLKIuNpon54TO';
+const callbackName = onSuccess || 'onTurnstileSuccess';
+---
+
+<div class={`turnstile-widget${className ? ` ${className}` : ''}`} data-turnstile>
+  <div class="cf-turnstile" data-sitekey={siteKey} data-callback={callbackName}></div>
+</div>
+
+<script>
+  const container = document.querySelector('[data-turnstile]');
+  if (container) {
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+    container.appendChild(script);
+  }
+</script>
+
+<style>
+  .turnstile-widget {
+    margin-top: 16px;
+  }
+</style>
