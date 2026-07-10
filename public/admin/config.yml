@@ -7,14 +7,14 @@ logo_url: https://projectcraft.dev/logo.png
 locale: zh_CN
 
 # ---------------------------------------------------------------------------
-# Backend — GitHub OAuth
+# Backend — GitHub (Personal Access Token)
+# On first login, paste a GitHub classic PAT with "repo" scope.
+# Generate: https://github.com/settings/tokens → Generate new token (classic)
 # ---------------------------------------------------------------------------
 backend:
   name: github
   repo: Wxyim/projectcraft.dev
   branch: main
-  base_url: https://projectcraft.dev
-  auth_endpoint: /api/oauth
 
 # ---------------------------------------------------------------------------
 # Media / uploads
