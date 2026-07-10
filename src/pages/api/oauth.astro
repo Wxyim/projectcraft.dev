@@ -12,7 +12,7 @@ if (!code) {
   return new Response(null, { status: 302, headers: { Location: gh.toString() } });
 }
 
-let html = '';
+let body = '';
 try {
   const res = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
@@ -22,25 +22,38 @@ try {
   const data = await res.json();
 
   if (data.error || !data.access_token) {
-    html = '<h1>Auth Failed</h1><p>' + (data.error_description || data.error || '') + '</p>';
+    body = '<h1>Auth Failed</h1><p>' + (data.error_description || data.error || '') + '</p>';
   } else {
-    const p = JSON.stringify({ token: data.access_token, provider: 'github' });
-    html = `<script>
-      (function(){
-        var d = ${p};
-        document.body.innerHTML = '<p style="font-family:sans-serif;padding:2rem">✅ Authorized — closing...</p>';
-        if (window.opener) {
-          window.opener.postMessage(d, '*');
-          setTimeout(function(){ window.close(); }, 500);
-        }
-      })();
-    </script>`;
+    const token = data.access_token;
+    body = '<h2>✅ Got token: ' + token.substring(0, 10) + '...</h2>'
+      + '<button onclick="send()">Send to opener</button>'
+      + '<button onclick="debug()">Debug</button>'
+      + '<pre id="log"></pre>'
+      + '<script>'
+      + 'var t=' + JSON.stringify(token) + ';'
+      + 'var msg=' + JSON.stringify({ token: token, provider: 'github' }) + ';'
+      + 'function debug(){'
+      + '  var o=!!window.opener,'
+      + '  u=o?window.opener.location.href:"n/a";'
+      + '  document.getElementById("log").textContent="opener:"+o+"\\norigin:"+u+"\\ntoken:"+t.substring(0,10)+"...";'
+      + '}'
+      + 'function send(){'
+      + '  if(window.opener){'
+      + '    window.opener.postMessage(msg,"*");'
+      + '    document.getElementById("log").textContent="SENT via postMessage";'
+      + '    setTimeout(function(){window.close();},1000);'
+      + '  }else{'
+      + '    document.getElementById("log").textContent="NO OPENER - cannot send";'
+      + '  }'
+      + '}'
+      + 'setTimeout(debug,100);'
+      + '</script>';
   }
 } catch (e) {
-  html = '<h1>Error</h1><p>' + e.message + '</p>';
+  body = '<h1>Error</h1><p>' + e.message + '</p>';
 }
 
-return new Response('<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem">' + html + '</body></html>', {
+return new Response('<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem">' + body + '</body></html>', {
   headers: { 'Content-Type': 'text/html; charset=utf-8' },
 });
 ---
