@@ -2,34 +2,35 @@
 import { site } from '@/config/site';
 
 const enabled = Boolean(site.giscus.repo && site.giscus.repoId && site.giscus.categoryId);
+const g = site.giscus;
 ---
 
 {enabled ? (
   <section aria-label="Comments">
-    <div data-giscus-container></div>
+    <div data-giscus-container data-repo={g.repo} data-repo-id={g.repoId} data-category={g.category} data-category-id={g.categoryId} data-mapping={g.mapping} data-strict={g.strict} data-reactions-enabled={g.reactionsEnabled} data-emit-metadata={g.emitMetadata} data-input-position={g.inputPosition} data-lang={g.lang}></div>
   </section>
 ) : (
   <section aria-label="Comments" hidden></section>
 )}
 
-<script is:inline>
+<script>
   (function() {
     var container = document.querySelector('[data-giscus-container]');
     if (!container) return;
     var theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     var script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
-    script.setAttribute('data-repo', {JSON.stringify(site.giscus.repo)});
-    script.setAttribute('data-repo-id', {JSON.stringify(site.giscus.repoId)});
-    script.setAttribute('data-category', {JSON.stringify(site.giscus.category)});
-    script.setAttribute('data-category-id', {JSON.stringify(site.giscus.categoryId)});
-    script.setAttribute('data-mapping', {JSON.stringify(site.giscus.mapping)});
-    script.setAttribute('data-strict', {JSON.stringify(site.giscus.strict)});
-    script.setAttribute('data-reactions-enabled', {JSON.stringify(site.giscus.reactionsEnabled)});
-    script.setAttribute('data-emit-metadata', {JSON.stringify(site.giscus.emitMetadata)});
-    script.setAttribute('data-input-position', {JSON.stringify(site.giscus.inputPosition)});
+    script.setAttribute('data-repo', container.dataset.repo);
+    script.setAttribute('data-repo-id', container.dataset.repoId);
+    script.setAttribute('data-category', container.dataset.category);
+    script.setAttribute('data-category-id', container.dataset.categoryId);
+    script.setAttribute('data-mapping', container.dataset.mapping);
+    script.setAttribute('data-strict', container.dataset.strict);
+    script.setAttribute('data-reactions-enabled', container.dataset.reactionsEnabled);
+    script.setAttribute('data-emit-metadata', container.dataset.emitMetadata);
+    script.setAttribute('data-input-position', container.dataset.inputPosition);
     script.setAttribute('data-theme', theme);
-    script.setAttribute('data-lang', {JSON.stringify(site.giscus.lang)});
+    script.setAttribute('data-lang', container.dataset.lang);
     script.crossOrigin = 'anonymous';
     script.async = true;
     container.appendChild(script);
