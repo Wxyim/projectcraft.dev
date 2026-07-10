@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Giscus from '@/components/Giscus.astro';
 import { ArrowUpRight } from '@lucide/astro';
-import { collectionLabel, collectionNames, formatDate, getEntryUrl, getExplicitRelated, getTagRelated, getUpstream, type CollectionName, type AnyEntry } from '@/utils/content';
+import { collectionLabel, formatDate, getEntryUrl, getExplicitRelated, getTagRelated, getUpstream, type CollectionName, type AnyEntry } from '@/utils/content';
 
 const { collection, slug } = Astro.params;
 if (!collection || !slug) return new Response('Not found', { status: 404 });

@@ -20,17 +20,6 @@ export const site = {
   }
 } as const;
 
-export const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/projects/', label: 'Projects' },
-  { href: '/articles/', label: 'Articles' },
-  { href: '/notes/', label: 'Notes' },
-  { href: '/garden/', label: 'Garden' },
-  { href: '/resources/', label: 'Resources' },
-  { href: '/weekly/', label: 'Weekly' },
-  { href: '/search/', label: 'Search' }
-] as const;
-
 export const collections = {
   projects: { title: 'Projects', description: '花园里结出的果实，一个个完整打磨的作品。' },
   notes: { title: 'Notes', description: '每一张卡片都是数字花园里的一颗种子。' },

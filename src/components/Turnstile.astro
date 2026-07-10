@@ -1,4 +1,6 @@
 ---
+import { env } from 'cloudflare:workers';
+
 interface Props {
   /** Callback receives the Turnstile token after successful verification */
   onSuccess?: string;
@@ -7,7 +9,7 @@ interface Props {
 }
 
 const { onSuccess, class: className } = Astro.props;
-const siteKey = '0x4AAAAAADylLKIuNpon54TO';
+const siteKey = env.TURNSTILE_SITE_KEY || '';
 const callbackName = onSuccess || 'onTurnstileSuccess';
 ---
 

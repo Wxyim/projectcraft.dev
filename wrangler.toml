@@ -10,3 +10,7 @@ GITHUB_CLIENT_ID = "Ov23liWISCKJJvhWybtZ"
 
 # GITHUB_CLIENT_SECRET is set via `wrangler secret put GITHUB_CLIENT_SECRET`
 # (do NOT commit it here). Required by the proxy to exchange the auth code.
+
+# Cloudflare Turnstile site key (public — visible in client HTML).
+# Used by the Turnstile widget component.
+TURNSTILE_SITE_KEY = "0x4AAAAAADylLKIuNpon54TO"
