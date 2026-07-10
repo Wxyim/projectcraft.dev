@@ -1,20 +1,4 @@
 ---
-function page(title: string, detail: string) {
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem"><h1>❌ ${title}</h1><p>${detail}</p></body></html>`;
-}
-
-function postToken(token: string) {
-  const p = JSON.stringify({ token, provider: 'github' });
-  return `<!DOCTYPE html>
-<html><head><title>Signing in…</title></head><body>
-<script>
-(function(){
-  if(window.opener){window.opener.postMessage(${p},window.opener.location.origin);window.close();}
-  else{document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">✅ Done &mdash; close this tab.</p>';}
-})();
-</script></body></html>`;
-}
-
 const url = Astro.url;
 const code = url.searchParams.get('code');
 const redirectUri = url.origin + '/api/oauth';
@@ -28,7 +12,7 @@ if (!code) {
   return new Response(null, { status: 302, headers: { Location: gh.toString() } });
 }
 
-let html: string;
+let result = '';
 try {
   const res = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
@@ -39,15 +23,18 @@ try {
       code,
     }),
   });
-  const data: any = await res.json();
+  const data = await res.json();
   if (data.error || !data.access_token) {
-    html = page('Auth Failed', data.error_description || data.error || 'Unknown');
+    result = '<h1>Auth Failed</h1><p>' + (data.error_description || data.error || 'Unknown') + '</p>';
   } else {
-    html = postToken(data.access_token);
+    const p = JSON.stringify({ token: data.access_token, provider: 'github' });
+    result = '<script>(function(){if(window.opener){window.opener.postMessage(' + p + ',window.opener.location.origin);window.close();}else{document.body.innerHTML="<p>Done - close this tab.</p>";}})();</script>';
   }
-} catch (err: any) {
-  html = page('Error', err.message);
+} catch (err) {
+  result = '<h1>Error</h1><p>' + err.message + '</p>';
 }
 
-return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+return new Response('<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem">' + result + '</body></html>', {
+  headers: { 'Content-Type': 'text/html; charset=utf-8' },
+});
 ---
