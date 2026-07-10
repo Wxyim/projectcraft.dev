@@ -17,6 +17,7 @@ html {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--text);
+  scroll-padding-top: 84px;
 }
 
 body {
@@ -148,7 +149,6 @@ summary { cursor: pointer; font-weight: 600; }
 
 .footnotes li {
   margin-bottom: 4px;
-  scroll-margin-top: 84px;
 }
 
 .footnotes .data-footnote-backref {
