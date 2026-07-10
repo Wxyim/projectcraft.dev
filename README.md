@@ -74,8 +74,9 @@ Markdown 脚注：
 ### 功能
 
 - 可视化编辑所有 collection（Articles、Notes、Projects、Resources、Weekly、Garden）
-- 支持 Markdown 编辑、图片上传、标签管理
+- 支持 Markdown 编辑、图片上传、封面图、标签管理
 - 编辑工作流（Editorial Workflow）：草稿 → 审核 → 发布
+- 预览面板样式与前端一致（`preview.css`）
 - 通过 GitHub OAuth 登录（无需 Personal Access Token）
 
 ### OAuth 配置
@@ -84,7 +85,7 @@ Markdown 脚注：
 
 1. 在 GitHub 创建 OAuth App：[Settings → Developer settings → OAuth Apps](https://github.com/settings/developers)
    - Authorization callback URL: `https://你的域名/api/oauth`
-2. 修改 `wrangler.toml` 中 `[vars]` 段的 `GITHUB_CLIENT_ID` 为你的 OAuth App Client ID
+2. 修改 `wrangler.toml` 中 `[vars]` 段的 `GITHUB_CLIENT_ID` 和 `TURNSTILE_SITE_KEY` 为你的值
 3. 在 Cloudflare Worker 后台 → Settings → Variables 中添加密钥：
    - `GITHUB_CLIENT_SECRET` — OAuth App 的 Client Secret
    - `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile 密钥
@@ -99,8 +100,7 @@ Markdown 脚注：
 编辑 `src/config/site.ts`：
 
 - `title`、`description`、`url`、`author`、`github`、`lang`、`locale`
-- Giscus 评论：`repo`、`repoId`、`category`、`categoryId` 等
-- 导航栏：`navItems`
+- Giscus 评论：`repo`、`repoId`、`category`、`categoryId`、`mapping`、`lang` 等
 - 各 collection 的标题和描述：`collections`
 - `/now` 页面的当前状态：`nowItems`
 
@@ -115,7 +115,8 @@ Markdown 脚注：
 | 📡 RSS | `/rss.xml`，聚合所有已发布内容 |
 | 💬 评论 | 基于 Giscus（GitHub Discussions），需在 `site.ts` 配置 |
 | 🛡️ Turnstile | Cloudflare Turnstile 人机验证组件和验证 API |
-| 📝 Decap CMS | `/admin/` 在线编辑器，支持 GitHub OAuth 登录 |
+| 📝 Decap CMS | `/admin/` 在线编辑器，GitHub OAuth 登录，预览样式一致 |
+| 🖼️ 封面图 | 支持文章封面图，详情页自动渲染 |
 | 🌱 数字花园 | 内容关联图：上游知识 + 相关笔记自动聚合 |
 | 🏷️ 标签系统 | 每篇文章支持标签，自动生成标签关联推荐 |
 | 🔗 内容关联 | 手动 `related` + 自动标签关联 + 正文引用解析 |
@@ -154,7 +155,9 @@ src/
 public/
 ├── admin/
 │   ├── index.html              # Decap CMS 入口
-│   └── config.yml              # Decap CMS 配置
+│   ├── config.yml              # Decap CMS 配置
+│   └── preview.css             # Decap CMS 预览面板样式
+├── uploads/                    # Decap CMS 上传的图片
 ├── _headers                    # 安全头与静态资源缓存
 └── robots.txt
 ```
