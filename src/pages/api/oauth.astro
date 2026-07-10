@@ -1,18 +1,19 @@
 ---
 import { env } from 'cloudflare:workers';
 
+const url = Astro.url;
+const code = url.searchParams.get('code');
+
+if (!code) {
+  const gh = new URL('https://github.com/login/oauth/authorize');
+  gh.searchParams.set('client_id', env.GITHUB_CLIENT_ID || '');
+  gh.searchParams.set('scope', 'repo,user');
+  gh.searchParams.set('redirect_uri', url.origin + '/api/oauth');
+  return new Response(null, { status: 302, headers: { Location: gh.toString() } });
+}
+
+let html = '';
 try {
-  const url = Astro.url;
-  const code = url.searchParams.get('code');
-
-  if (!code) {
-    const gh = new URL('https://github.com/login/oauth/authorize');
-    gh.searchParams.set('client_id', env.GITHUB_CLIENT_ID || '');
-    gh.searchParams.set('scope', 'repo,user');
-    gh.searchParams.set('redirect_uri', url.origin + '/api/oauth');
-    return new Response(null, { status: 302, headers: { Location: gh.toString() } });
-  }
-
   const res = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
@@ -21,20 +22,25 @@ try {
   const data = await res.json();
 
   if (data.error || !data.access_token) {
-    return new Response('<html><body style="font-family:sans-serif;padding:2rem"><h1>Auth Failed</h1><p>' + (data.error_description || data.error || '') + '</p></body></html>', {
-      status: 400,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    });
+    html = '<h1>Auth Failed</h1><p>' + (data.error_description || data.error || '') + '</p>';
+  } else {
+    const p = JSON.stringify({ token: data.access_token, provider: 'github' });
+    html = `<script>
+      (function(){
+        var d = ${p};
+        document.body.innerHTML = '<p style="font-family:sans-serif;padding:2rem">✅ Authorized — closing...</p>';
+        if (window.opener) {
+          window.opener.postMessage(d, '*');
+          setTimeout(function(){ window.close(); }, 500);
+        }
+      })();
+    </script>`;
   }
-
-  const p = JSON.stringify({ token: data.access_token, provider: 'github' });
-  return new Response('<html><body><script>(function(){var d=' + p + ';if(window.opener){window.opener.postMessage(d,window.opener.location.origin);window.close();}else{document.body.innerHTML="<p style=font-family:sans-serif;padding:2rem>Done - close this tab.</p>";}})();</script></body></html>', {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-  });
 } catch (e) {
-  return new Response('ERROR: ' + e, {
-    status: 500,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-  });
+  html = '<h1>Error</h1><p>' + e.message + '</p>';
 }
+
+return new Response('<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem">' + html + '</body></html>', {
+  headers: { 'Content-Type': 'text/html; charset=utf-8' },
+});
 ---
