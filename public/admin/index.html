@@ -7,6 +7,30 @@
   <link rel="icon" type="image/png" href="/logo.png" />
   <style>
     body { margin: 0; padding: 0; }
+
+    /*
+     * When Decap CMS auth fails, an inline error message is rendered inside
+     * the login card, which pushes the "Back to our site" link and the Decap
+     * CMS logo together until they overlap.
+     *
+     * Decap mounts its React root into <div id="nc-root"> on document.body.
+     * The login page uses a centered flex column that can clip overflow when
+     * an error message adds extra height. The fixes below allow the page to
+     * grow and scroll instead of clipping its bottom elements.
+     */
+
+    /* Allow the page to scroll when content exceeds the viewport */
+    html {
+      overflow-y: auto !important;
+    }
+
+    /* Decap sets height:100vh on #nc-root for the dashboard layout. Override
+     * so the login page can grow beyond the viewport when an inline error is
+     * shown, while still filling the viewport at minimum. */
+    #nc-root {
+      height: auto !important;
+      min-height: 100vh !important;
+    }
   </style>
 </head>
 <body>
