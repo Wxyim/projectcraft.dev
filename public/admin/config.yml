@@ -7,7 +7,7 @@ logo_url: https://projectcraft.dev/logo.png
 locale: zh_CN
 
 # ---------------------------------------------------------------------------
-# Backend — GitHub + OAuth via Cloudflare Worker endpoint
+# Backend — GitHub OAuth
 # ---------------------------------------------------------------------------
 backend:
   name: github
@@ -15,7 +15,6 @@ backend:
   branch: main
   base_url: https://projectcraft.dev
   auth_endpoint: /api/oauth
-  # After OAuth setup, the CMS commits directly to GitHub via the user's token
 
 # ---------------------------------------------------------------------------
 # Media / uploads
