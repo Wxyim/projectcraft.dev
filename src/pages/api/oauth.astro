@@ -1,4 +1,20 @@
 ---
+function page(title: string, detail: string) {
+  return `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem"><h1>❌ ${title}</h1><p>${detail}</p></body></html>`;
+}
+
+function postToken(token: string) {
+  const p = JSON.stringify({ token, provider: 'github' });
+  return `<!DOCTYPE html>
+<html><head><title>Signing in…</title></head><body>
+<script>
+(function(){
+  if(window.opener){window.opener.postMessage(${p},window.opener.location.origin);window.close();}
+  else{document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">✅ Done &mdash; close this tab.</p>';}
+})();
+</script></body></html>`;
+}
+
 const url = Astro.url;
 const code = url.searchParams.get('code');
 const redirectUri = url.origin + '/api/oauth';
@@ -35,19 +51,3 @@ try {
 
 return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 ---
-
-function page(title: string, detail: string) {
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem"><h1>❌ ${title}</h1><p>${detail}</p></body></html>`;
-}
-
-function postToken(token: string) {
-  const p = JSON.stringify({ token, provider: 'github' });
-  return `<!DOCTYPE html>
-<html><head><title>Signing in…</title></head><body>
-<script>
-(function(){
-  if(window.opener){window.opener.postMessage(${p},window.opener.location.origin);window.close();}
-  else{document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">✅ Done &mdash; close this tab.</p>';}
-})();
-</script></body></html>`;
-}
