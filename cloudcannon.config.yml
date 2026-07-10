@@ -1,32 +1,64 @@
-# CloudCannon configuration for projectcraft.dev
-# Docs: https://cloudcannon.com/documentation/articles/defining-your-collections-configuration/
-
+paths:
+  uploads: public/uploads
+  static: public
+collections_config:
+  articles:
+    path: src/content/articles
+    icon: article
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
+  garden:
+    path: src/content/garden
+    icon: cards
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
+  notes:
+    path: src/content/notes
+    icon: notes
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
+  projects:
+    path: src/content/projects
+    icon: eject
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
+  resources:
+    path: src/content/resources
+    icon: gesture
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
+  weekly:
+    path: src/content/weekly
+    icon: reply
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
 base_url: https://projectcraft.dev
-
-# ---------------------------------------------------------------------------
-# Global editor defaults
-# ---------------------------------------------------------------------------
 editor:
   default_path: /src/content/articles
-
-# ---------------------------------------------------------------------------
-# Shared field groups (reusable across collections)
-# ---------------------------------------------------------------------------
+timezone: Etc/UTC
 _defaults:
   input_options:
     markdown: true
-
-# ---------------------------------------------------------------------------
-# Content collections
-# ---------------------------------------------------------------------------
 collections:
   articles:
-    name: "📝 Articles"
+    name: 📝 Articles
     path: src/content/articles
     output: true
     filter: strict
     create:
-      path: "{title|slugify}.md"
+      path: '{title|slugify}.md'
     schema:
       - key: title
         type: text
@@ -40,7 +72,7 @@ collections:
       - key: updatedDate
         type: date
         label: Last Updated
-        default: ""
+        default: ''
       - key: draft
         type: checkbox
         label: Draft
@@ -52,7 +84,7 @@ collections:
       - key: order
         type: number
         label: Sort Order
-        default: ""
+        default: ''
       - key: tags
         type: array
         label: Tags
@@ -63,7 +95,7 @@ collections:
       - key: image
         type: image
         label: Cover Image
-        default: ""
+        default: ''
       - key: seoTitle
         type: text
         label: SEO Title
@@ -73,14 +105,13 @@ collections:
     sort:
       key: pubDate
       direction: desc
-
   notes:
-    name: "📔 Notes"
+    name: 📔 Notes
     path: src/content/notes
     output: true
     filter: strict
     create:
-      path: "{title|slugify}.md"
+      path: '{title|slugify}.md'
     schema:
       - key: title
         type: text
@@ -94,7 +125,7 @@ collections:
       - key: updatedDate
         type: date
         label: Last Updated
-        default: ""
+        default: ''
       - key: draft
         type: checkbox
         label: Draft
@@ -106,7 +137,7 @@ collections:
       - key: order
         type: number
         label: Sort Order
-        default: ""
+        default: ''
       - key: tags
         type: array
         label: Tags
@@ -117,7 +148,7 @@ collections:
       - key: image
         type: image
         label: Cover Image
-        default: ""
+        default: ''
       - key: seoTitle
         type: text
         label: SEO Title
@@ -127,14 +158,13 @@ collections:
     sort:
       key: pubDate
       direction: desc
-
   projects:
-    name: "🚀 Projects"
+    name: 🚀 Projects
     path: src/content/projects
     output: true
     filter: strict
     create:
-      path: "{title|slugify}.md"
+      path: '{title|slugify}.md'
     schema:
       - key: title
         type: text
@@ -148,7 +178,7 @@ collections:
       - key: updatedDate
         type: date
         label: Last Updated
-        default: ""
+        default: ''
       - key: draft
         type: checkbox
         label: Draft
@@ -160,7 +190,7 @@ collections:
       - key: order
         type: number
         label: Sort Order
-        default: ""
+        default: ''
       - key: tags
         type: array
         label: Tags
@@ -171,7 +201,7 @@ collections:
       - key: image
         type: image
         label: Cover Image
-        default: ""
+        default: ''
       - key: seoTitle
         type: text
         label: SEO Title
@@ -181,14 +211,13 @@ collections:
     sort:
       key: order
       direction: asc
-
   resources:
-    name: "📚 Resources"
+    name: 📚 Resources
     path: src/content/resources
     output: true
     filter: strict
     create:
-      path: "{title|slugify}.md"
+      path: '{title|slugify}.md'
     schema:
       - key: title
         type: text
@@ -202,7 +231,7 @@ collections:
       - key: updatedDate
         type: date
         label: Last Updated
-        default: ""
+        default: ''
       - key: draft
         type: checkbox
         label: Draft
@@ -214,7 +243,7 @@ collections:
       - key: order
         type: number
         label: Sort Order
-        default: ""
+        default: ''
       - key: tags
         type: array
         label: Tags
@@ -225,7 +254,7 @@ collections:
       - key: image
         type: image
         label: Cover Image
-        default: ""
+        default: ''
       - key: seoTitle
         type: text
         label: SEO Title
@@ -235,14 +264,13 @@ collections:
     sort:
       key: order
       direction: asc
-
   weekly:
-    name: "📅 Weekly"
+    name: 📅 Weekly
     path: src/content/weekly
     output: true
     filter: strict
     create:
-      path: "{title|slugify}.md"
+      path: '{title|slugify}.md'
     schema:
       - key: title
         type: text
@@ -256,7 +284,7 @@ collections:
       - key: updatedDate
         type: date
         label: Last Updated
-        default: ""
+        default: ''
       - key: draft
         type: checkbox
         label: Draft
@@ -268,7 +296,7 @@ collections:
       - key: order
         type: number
         label: Sort Order
-        default: ""
+        default: ''
       - key: tags
         type: array
         label: Tags
@@ -279,7 +307,7 @@ collections:
       - key: image
         type: image
         label: Cover Image
-        default: ""
+        default: ''
       - key: seoTitle
         type: text
         label: SEO Title
@@ -289,14 +317,13 @@ collections:
     sort:
       key: pubDate
       direction: desc
-
   garden:
-    name: "🌱 Garden"
+    name: 🌱 Garden
     path: src/content/garden
     output: true
     filter: strict
     create:
-      path: "{title|slugify}.md"
+      path: '{title|slugify}.md'
     schema:
       - key: title
         type: text
@@ -310,7 +337,7 @@ collections:
       - key: updatedDate
         type: date
         label: Last Updated
-        default: ""
+        default: ''
       - key: draft
         type: checkbox
         label: Draft
@@ -322,7 +349,7 @@ collections:
       - key: order
         type: number
         label: Sort Order
-        default: ""
+        default: ''
       - key: tags
         type: array
         label: Tags
@@ -333,7 +360,7 @@ collections:
       - key: image
         type: image
         label: Cover Image
-        default: ""
+        default: ''
       - key: seoTitle
         type: text
         label: SEO Title
@@ -351,15 +378,6 @@ collections:
     sort:
       key: pubDate
       direction: desc
-
-# ---------------------------------------------------------------------------
-# CloudCannon site-level settings
-# ---------------------------------------------------------------------------
-paths:
-  static: public
-  uploads: public/uploads
-
-# Build config for CloudCannon's built-in staging
 build:
   command: npm run build
   output: dist
