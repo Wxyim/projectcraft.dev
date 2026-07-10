@@ -1,8 +1,9 @@
 ---
+import { env } from 'cloudflare:workers';
+
 try {
   const url = Astro.url;
   const code = url.searchParams.get('code');
-  const env = (Astro.locals as any)?.runtime?.env ?? {};
 
   if (!code) {
     const gh = new URL('https://github.com/login/oauth/authorize');
@@ -12,7 +13,6 @@ try {
     return new Response(null, { status: 302, headers: { Location: gh.toString() } });
   }
 
-  // Got code - exchange for token
   const res = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },

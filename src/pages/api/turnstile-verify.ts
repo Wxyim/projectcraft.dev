@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request }) => {
   const body = await request.json();
   const token = body?.token;
 
@@ -8,9 +9,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ success: false, error: 'missing token' }), { status: 400 });
   }
 
-  const secretKey = (locals as any).runtime?.env?.TURNSTILE_SECRET_KEY
-    ?? import.meta.env.TURNSTILE_SECRET_KEY
-    ?? process.env.TURNSTILE_SECRET_KEY;
+  const secretKey = env.TURNSTILE_SECRET_KEY;
 
   if (!secretKey) {
     return new Response(JSON.stringify({ success: false, error: 'server not configured' }), { status: 500 });
