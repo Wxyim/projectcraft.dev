@@ -34,6 +34,7 @@ const upstream = getUpstream(entry as AnyEntry, allEntries);
       {entry.data.updatedDate && <span>Updated {formatDate(entry.data.updatedDate)}</span>}
     </div>
     <h1>{entry.data.title}</h1>
+    {entry.data.image && <img class="cover-image" src={entry.data.image} alt={entry.data.title} />}
     {entry.data.description && <p class="lede">{entry.data.description}</p>}
     {entry.data.tags.length > 0 && (
       <div class="tags" aria-label="Tags" style="margin-top: 8px;">
@@ -69,6 +70,14 @@ const upstream = getUpstream(entry as AnyEntry, allEntries);
 </BaseLayout>
 
 <style>
+  .cover-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 4px 0 20px;
+  }
+
   .related-notes {
     margin-bottom: 20px;
     padding-bottom: 20px;
