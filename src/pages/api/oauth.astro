@@ -1,16 +1,35 @@
 ---
 try {
-  const code = Astro.url.searchParams.get('code');
+  const url = Astro.url;
+  const code = url.searchParams.get('code');
+  const env = (Astro.locals as any)?.runtime?.env ?? {};
 
   if (!code) {
-    // Redirect to GitHub OAuth - skip for now, just confirm Astro globals work
-    return new Response('step1: astro.url works, no code param | origin=' + Astro.url.origin, {
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    const gh = new URL('https://github.com/login/oauth/authorize');
+    gh.searchParams.set('client_id', env.GITHUB_CLIENT_ID || '');
+    gh.searchParams.set('scope', 'repo,user');
+    gh.searchParams.set('redirect_uri', url.origin + '/api/oauth');
+    return new Response(null, { status: 302, headers: { Location: gh.toString() } });
+  }
+
+  // Got code - exchange for token
+  const res = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code }),
+  });
+  const data = await res.json();
+
+  if (data.error || !data.access_token) {
+    return new Response('<html><body style="font-family:sans-serif;padding:2rem"><h1>Auth Failed</h1><p>' + (data.error_description || data.error || '') + '</p></body></html>', {
+      status: 400,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });
   }
 
-  return new Response('step2: got code=' + code, {
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  const p = JSON.stringify({ token: data.access_token, provider: 'github' });
+  return new Response('<html><body><script>(function(){var d=' + p + ';if(window.opener){window.opener.postMessage(d,window.opener.location.origin);window.close();}else{document.body.innerHTML="<p style=font-family:sans-serif;padding:2rem>Done - close this tab.</p>";}})();</script></body></html>', {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 } catch (e) {
   return new Response('ERROR: ' + e, {
