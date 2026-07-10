@@ -17,4 +17,4 @@ TURNSTILE_SITE_KEY = "0x4AAAAAADylLKIuNpon54TO"
 
 # Comma-separated GitHub usernames allowed to log into Decap CMS.
 # If empty (or not set), ANY GitHub user can authenticate — set this!
-AUTHORIZED_USERS = "test-user"
+AUTHORIZED_USERS = "Wxyim"
