@@ -1,11 +1,14 @@
 ---
-title: "Markdown 格式展示"
-description: "测试 Astro 对 Markdown 各种常用格式的渲染效果。"
+title: Markdown 格式展示
+description: 测试 Astro 对 Markdown 各种常用格式的渲染效果。
 pubDate: 2026-07-09
-tags: ["Markdown", "Demo"]
+draft: false
 featured: true
 order: 3
-draft: false
+tags:
+  - Markdown
+  - Demo
+image: /uploads/cover.png
 ---
 
 ## 文本样式
