@@ -54,18 +54,26 @@ if (code) {
       let login = '';
       try {
         const userRes = await fetch('https://api.github.com/user', {
-          headers: { Authorization: 'Bearer ' + data.access_token, Accept: 'application/json' },
+          headers: { Authorization: 'token ' + data.access_token, 'User-Agent': 'Decap-OAuth-Proxy' },
         });
+        const userText = await userRes.text();
         if (userRes.ok) {
-          const userData: any = await userRes.json();
-          login = userData?.login ?? '';
+          try {
+            const userData = JSON.parse(userText);
+            login = userData?.login ?? '';
+          } catch (_) { /* fall through */ }
         }
-      } catch (_) { /* /user call failed — treat as unauthorized */ }
+        if (!login) {
+          detail = '/user API returned ' + userRes.status + ': ' + userText.slice(0, 100);
+        }
+      } catch (e: any) {
+        detail = '/user fetch failed: ' + (e?.message || String(e));
+      }
 
       if (!login || !authorizedUsers.includes(login)) {
         msgKind = 'error';
         status = '🚫 Access denied';
-        detail = login
+        if (!detail) detail = login
           ? 'GitHub user "' + login + '" is not authorized.'
           : 'Could not verify GitHub identity.';
         payload = JSON.stringify({ message: detail });
@@ -93,10 +101,10 @@ if (code) {
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const payloadJs = JSON.stringify(prefix + payload); // a quoted JS string
 
-  const body = `<div style="font-family:system-ui,sans-serif;padding:2rem">
-    <h2>${esc(status)}</h2>
-    <pre style="white-space:pre-wrap;word-break:break-all">${esc(detail)}</pre>
-    <p id="log" style="color:#666">opener: …</p>
+  const body = `<div style="font-family:system-ui,sans-serif;padding:2rem;min-height:100vh;box-sizing:border-box">
+    <h2 style="margin:0 0 16px">${esc(status)}</h2>
+    <pre style="white-space:pre-wrap;word-break:break-all;margin:0 0 24px;font-size:0.9rem;color:#62615c">${esc(detail)}</pre>
+    <p id="log" style="color:#999;font-size:0.85rem">opener: …</p>
   </div>
   <script>
     (function () {
@@ -113,7 +121,7 @@ if (code) {
     })();
   </script>`;
 
-  return new Response('<!DOCTYPE html><html><body style="margin:0">' + body + '</body></html>', {
+  return new Response('<!DOCTYPE html><html><body style="margin:0;background:#fff;color:#171717">' + body + '</body></html>', {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
