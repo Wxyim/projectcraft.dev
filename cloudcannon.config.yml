@@ -16,50 +16,6 @@ _defaults:
   input_options:
     markdown: true
 
-_common_schema: &common_schema
-  - key: title
-    type: text
-    label: Title
-  - key: description
-    type: textarea
-    label: Description
-  - key: pubDate
-    type: date
-    label: Publish Date
-  - key: updatedDate
-    type: date
-    label: Last Updated
-    default: ""
-  - key: draft
-    type: checkbox
-    label: Draft
-    default: false
-  - key: featured
-    type: checkbox
-    label: Featured
-    default: false
-  - key: order
-    type: number
-    label: Sort Order
-    default: ""
-  - key: tags
-    type: array
-    label: Tags
-  - key: related
-    type: array
-    label: Related Posts
-    default: []
-  - key: image
-    type: image
-    label: Cover Image
-    default: ""
-  - key: seoTitle
-    type: text
-    label: SEO Title
-  - key: seoDescription
-    type: textarea
-    label: SEO Description
-
 # ---------------------------------------------------------------------------
 # Content collections
 # ---------------------------------------------------------------------------
@@ -72,7 +28,48 @@ collections:
     create:
       path: "{title|slugify}.md"
     schema:
-      <<: *common_schema
+      - key: title
+        type: text
+        label: Title
+      - key: description
+        type: textarea
+        label: Description
+      - key: pubDate
+        type: date
+        label: Publish Date
+      - key: updatedDate
+        type: date
+        label: Last Updated
+        default: ""
+      - key: draft
+        type: checkbox
+        label: Draft
+        default: false
+      - key: featured
+        type: checkbox
+        label: Featured
+        default: false
+      - key: order
+        type: number
+        label: Sort Order
+        default: ""
+      - key: tags
+        type: array
+        label: Tags
+      - key: related
+        type: array
+        label: Related Posts
+        default: []
+      - key: image
+        type: image
+        label: Cover Image
+        default: ""
+      - key: seoTitle
+        type: text
+        label: SEO Title
+      - key: seoDescription
+        type: textarea
+        label: SEO Description
     sort:
       key: pubDate
       direction: desc
@@ -85,7 +82,48 @@ collections:
     create:
       path: "{title|slugify}.md"
     schema:
-      <<: *common_schema
+      - key: title
+        type: text
+        label: Title
+      - key: description
+        type: textarea
+        label: Description
+      - key: pubDate
+        type: date
+        label: Publish Date
+      - key: updatedDate
+        type: date
+        label: Last Updated
+        default: ""
+      - key: draft
+        type: checkbox
+        label: Draft
+        default: false
+      - key: featured
+        type: checkbox
+        label: Featured
+        default: false
+      - key: order
+        type: number
+        label: Sort Order
+        default: ""
+      - key: tags
+        type: array
+        label: Tags
+      - key: related
+        type: array
+        label: Related Posts
+        default: []
+      - key: image
+        type: image
+        label: Cover Image
+        default: ""
+      - key: seoTitle
+        type: text
+        label: SEO Title
+      - key: seoDescription
+        type: textarea
+        label: SEO Description
     sort:
       key: pubDate
       direction: desc
@@ -98,7 +136,48 @@ collections:
     create:
       path: "{title|slugify}.md"
     schema:
-      <<: *common_schema
+      - key: title
+        type: text
+        label: Title
+      - key: description
+        type: textarea
+        label: Description
+      - key: pubDate
+        type: date
+        label: Publish Date
+      - key: updatedDate
+        type: date
+        label: Last Updated
+        default: ""
+      - key: draft
+        type: checkbox
+        label: Draft
+        default: false
+      - key: featured
+        type: checkbox
+        label: Featured
+        default: false
+      - key: order
+        type: number
+        label: Sort Order
+        default: ""
+      - key: tags
+        type: array
+        label: Tags
+      - key: related
+        type: array
+        label: Related Posts
+        default: []
+      - key: image
+        type: image
+        label: Cover Image
+        default: ""
+      - key: seoTitle
+        type: text
+        label: SEO Title
+      - key: seoDescription
+        type: textarea
+        label: SEO Description
     sort:
       key: order
       direction: asc
@@ -111,7 +190,48 @@ collections:
     create:
       path: "{title|slugify}.md"
     schema:
-      <<: *common_schema
+      - key: title
+        type: text
+        label: Title
+      - key: description
+        type: textarea
+        label: Description
+      - key: pubDate
+        type: date
+        label: Publish Date
+      - key: updatedDate
+        type: date
+        label: Last Updated
+        default: ""
+      - key: draft
+        type: checkbox
+        label: Draft
+        default: false
+      - key: featured
+        type: checkbox
+        label: Featured
+        default: false
+      - key: order
+        type: number
+        label: Sort Order
+        default: ""
+      - key: tags
+        type: array
+        label: Tags
+      - key: related
+        type: array
+        label: Related Posts
+        default: []
+      - key: image
+        type: image
+        label: Cover Image
+        default: ""
+      - key: seoTitle
+        type: text
+        label: SEO Title
+      - key: seoDescription
+        type: textarea
+        label: SEO Description
     sort:
       key: order
       direction: asc
@@ -124,7 +244,48 @@ collections:
     create:
       path: "{title|slugify}.md"
     schema:
-      <<: *common_schema
+      - key: title
+        type: text
+        label: Title
+      - key: description
+        type: textarea
+        label: Description
+      - key: pubDate
+        type: date
+        label: Publish Date
+      - key: updatedDate
+        type: date
+        label: Last Updated
+        default: ""
+      - key: draft
+        type: checkbox
+        label: Draft
+        default: false
+      - key: featured
+        type: checkbox
+        label: Featured
+        default: false
+      - key: order
+        type: number
+        label: Sort Order
+        default: ""
+      - key: tags
+        type: array
+        label: Tags
+      - key: related
+        type: array
+        label: Related Posts
+        default: []
+      - key: image
+        type: image
+        label: Cover Image
+        default: ""
+      - key: seoTitle
+        type: text
+        label: SEO Title
+      - key: seoDescription
+        type: textarea
+        label: SEO Description
     sort:
       key: pubDate
       direction: desc
@@ -137,7 +298,48 @@ collections:
     create:
       path: "{title|slugify}.md"
     schema:
-      <<: *common_schema
+      - key: title
+        type: text
+        label: Title
+      - key: description
+        type: textarea
+        label: Description
+      - key: pubDate
+        type: date
+        label: Publish Date
+      - key: updatedDate
+        type: date
+        label: Last Updated
+        default: ""
+      - key: draft
+        type: checkbox
+        label: Draft
+        default: false
+      - key: featured
+        type: checkbox
+        label: Featured
+        default: false
+      - key: order
+        type: number
+        label: Sort Order
+        default: ""
+      - key: tags
+        type: array
+        label: Tags
+      - key: related
+        type: array
+        label: Related Posts
+        default: []
+      - key: image
+        type: image
+        label: Cover Image
+        default: ""
+      - key: seoTitle
+        type: text
+        label: SEO Title
+      - key: seoDescription
+        type: textarea
+        label: SEO Description
       - key: status
         type: select
         label: Growth Stage
