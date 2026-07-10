@@ -101,10 +101,10 @@ if (code) {
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const payloadJs = JSON.stringify(prefix + payload); // a quoted JS string
 
-  const body = `<div style="font-family:system-ui,sans-serif;padding:2rem;min-height:100vh;box-sizing:border-box">
-    <h2 style="margin:0 0 16px">${esc(status)}</h2>
-    <pre style="white-space:pre-wrap;word-break:break-all;margin:0 0 24px;font-size:0.9rem;color:#62615c">${esc(detail)}</pre>
-    <p id="log" style="color:#999;font-size:0.85rem">opener: …</p>
+  const body = `<div style="font-family:system-ui,sans-serif;padding:20px 24px;box-sizing:border-box">
+    <h2 style="margin:0 0 12px;font-size:1.1rem">${esc(status)}</h2>
+    <p style="margin:0 0 20px;font-size:0.9rem;color:#62615c;line-height:1.5">${esc(detail)}</p>
+    <p id="log" style="color:#bbb;font-size:0.8rem">opener: …</p>
   </div>
   <script>
     (function () {
