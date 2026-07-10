@@ -13,6 +13,13 @@
       min-height: 100vh !important;
     }
 
+    /* Keep the Decap app logo compact in the admin header. */
+    #nc-root img[src$="/logo.png"] {
+      width: auto !important;
+      max-height: 32px !important;
+      object-fit: contain;
+    }
+
     body.decap-login-overflow #nc-root {
       padding-bottom: 6rem !important;
     }
