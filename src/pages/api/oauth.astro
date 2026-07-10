@@ -16,6 +16,8 @@
 //      "authorization:github:success:{...token...}" to the opener.
 //
 // Required Worker env: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET.
+// Optional: AUTHORIZED_USERS — comma-separated GitHub usernames (whitelist).
+//           If set, only listed users can authenticate through the proxy.
 
 import { env } from 'cloudflare:workers';
 
@@ -25,6 +27,7 @@ const scope = url.searchParams.get('scope') || 'repo';
 const redirectUri = url.origin + '/api/oauth';
 const clientId = env.GITHUB_CLIENT_ID || '';
 const clientSecret = env.GITHUB_CLIENT_SECRET || '';
+const authorizedUsers = (env.AUTHORIZED_USERS || '').split(',').map((s: string) => s.trim()).filter(Boolean);
 
 // ---- GitHub callback: exchange code for token, hand it back to Decap ----
 if (code) {
@@ -46,6 +49,27 @@ if (code) {
       status = '❌ Token exchange failed';
       detail = data.error_description || data.error || 'token exchange failed';
       payload = JSON.stringify({ message: detail });
+    } else if (authorizedUsers.length > 0) {
+      // Verify the authenticated GitHub user is in the whitelist
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { Authorization: 'Bearer ' + data.access_token, Accept: 'application/vnd.github+json' },
+      });
+      const userData: any = await userRes.json();
+      const login: string = userData?.login ?? '';
+
+      if (!login || !authorizedUsers.includes(login)) {
+        msgKind = 'error';
+        status = '🚫 Access denied';
+        detail = login
+          ? `GitHub user "${login}" is not authorized.`
+          : 'Could not verify GitHub identity.';
+        payload = JSON.stringify({ message: detail });
+      } else {
+        msgKind = 'success';
+        status = '✅ Authenticated';
+        detail = 'token: ' + String(data.access_token).slice(0, 10) + '… (sent to CMS)';
+        payload = JSON.stringify({ token: data.access_token, provider: 'github' });
+      }
     } else {
       msgKind = 'success';
       status = '✅ Authenticated';
