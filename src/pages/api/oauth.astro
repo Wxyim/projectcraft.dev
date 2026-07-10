@@ -56,24 +56,16 @@ if (code) {
         const userRes = await fetch('https://api.github.com/user', {
           headers: { Authorization: 'token ' + data.access_token, 'User-Agent': 'Decap-OAuth-Proxy' },
         });
-        const userText = await userRes.text();
         if (userRes.ok) {
-          try {
-            const userData = JSON.parse(userText);
-            login = userData?.login ?? '';
-          } catch (_) { /* fall through */ }
+          const userData: any = await userRes.json();
+          login = userData?.login ?? '';
         }
-        if (!login) {
-          detail = '/user API returned ' + userRes.status + ': ' + userText.slice(0, 100);
-        }
-      } catch (e: any) {
-        detail = '/user fetch failed: ' + (e?.message || String(e));
-      }
+      } catch (_) { /* /user call failed — treat as unauthorized */ }
 
       if (!login || !authorizedUsers.includes(login)) {
         msgKind = 'error';
         status = '🚫 Access denied';
-        if (!detail) detail = login
+        detail = login
           ? 'GitHub user "' + login + '" is not authorized.'
           : 'Could not verify GitHub identity.';
         payload = JSON.stringify({ message: detail });
