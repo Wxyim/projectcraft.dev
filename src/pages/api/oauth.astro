@@ -51,17 +51,22 @@ if (code) {
       payload = JSON.stringify({ message: detail });
     } else if (authorizedUsers.length > 0) {
       // Verify the authenticated GitHub user is in the whitelist
-      const userRes = await fetch('https://api.github.com/user', {
-        headers: { Authorization: 'Bearer ' + data.access_token, Accept: 'application/vnd.github+json' },
-      });
-      const userData: any = await userRes.json();
-      const login: string = userData?.login ?? '';
+      let login = '';
+      try {
+        const userRes = await fetch('https://api.github.com/user', {
+          headers: { Authorization: 'Bearer ' + data.access_token, Accept: 'application/json' },
+        });
+        if (userRes.ok) {
+          const userData: any = await userRes.json();
+          login = userData?.login ?? '';
+        }
+      } catch (_) { /* /user call failed — treat as unauthorized */ }
 
       if (!login || !authorizedUsers.includes(login)) {
         msgKind = 'error';
         status = '🚫 Access denied';
         detail = login
-          ? `GitHub user "${login}" is not authorized.`
+          ? 'GitHub user "' + login + '" is not authorized.'
           : 'Could not verify GitHub identity.';
         payload = JSON.stringify({ message: detail });
       } else {
