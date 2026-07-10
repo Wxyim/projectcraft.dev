@@ -6,7 +6,12 @@
   <title>Content Manager — projectcraft.dev</title>
   <link rel="icon" type="image/png" href="/logo.png" />
   <style>
-    body { margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-y: auto !important;
+    }
 
     /*
      * When Decap CMS auth fails, an inline error message is rendered inside
@@ -28,8 +33,14 @@
      * so the login page can grow beyond the viewport when an inline error is
      * shown, while still filling the viewport at minimum. */
     #nc-root {
+      display: block;
       height: auto !important;
       min-height: 100vh !important;
+      box-sizing: border-box;
+    }
+
+    body.decap-login-overflow #nc-root {
+      padding-bottom: 6rem !important;
     }
   </style>
 </head>
@@ -38,6 +49,28 @@
   <script>
     // Set the site URL for Decap CMS
     CMS.registerPreviewStyle('/admin/preview.css');
+
+    // Only add extra bottom space when the login footer is actually present.
+    // This keeps the dashboard layout unchanged while preventing the error
+    // message from colliding with the "Back to our site" footer on auth
+    // failures.
+    (function () {
+      var root = null;
+
+      function updateOverflowClass() {
+        if (!root) root = document.getElementById('nc-root');
+        if (!root) return;
+
+        var text = root.textContent || '';
+        var needsExtraSpace = /Back to our site|Decap CMS/i.test(text);
+        document.body.classList.toggle('decap-login-overflow', needsExtraSpace);
+      }
+
+      updateOverflowClass();
+
+      var observer = new MutationObserver(updateOverflowClass);
+      observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    })();
   </script>
 </body>
 </html>
