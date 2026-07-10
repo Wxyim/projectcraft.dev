@@ -89,13 +89,13 @@ if (code) {
   }
 
   const prefix = 'authorization:github:' + msgKind + ':';
-  // Escape for safe embedding in HTML text and in a JS string literal.
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const payloadJs = JSON.stringify(prefix + payload); // a quoted JS string
+  const payloadJs = JSON.stringify(prefix + payload);
 
-  const body = `<div style="font-family:system-ui,sans-serif;padding:16px 24px;box-sizing:border-box">
-    <h2 style="margin:0 0 8px;font-size:1.1rem">${esc(status)}</h2>
-    <p style="margin:0;font-size:0.9rem;color:#62615c;line-height:1.4">${esc(detail)}</p>
+  // Absolute-positioned overlay — sits above Decap's UI without pushing it
+  const body = `<div style="position:absolute;top:0;left:0;right:0;z-index:99;font-family:system-ui,sans-serif;padding:16px 20px;background:#fff;border-bottom:1px solid #e0e0e0">
+    <strong>${esc(status)}</strong>
+    <span style="margin-left:8px;color:#888;font-size:0.9rem">${esc(detail)}</span>
   </div>
   <script>
     (function () {
@@ -107,7 +107,7 @@ if (code) {
     })();
   </script>`;
 
-  return new Response('<!DOCTYPE html><html><body style="margin:0;background:#fff;color:#171717">' + body + '</body></html>', {
+  return new Response('<!DOCTYPE html><html><body style="margin:0">' + body + '</body></html>', {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
