@@ -1,0 +1,163 @@
+# CloudCannon configuration for projectcraft.dev
+# Docs: https://cloudcannon.com/documentation/articles/defining-your-collections-configuration/
+
+base_url: https://projectcraft.dev
+
+# ---------------------------------------------------------------------------
+# Global editor defaults
+# ---------------------------------------------------------------------------
+editor:
+  default_path: /src/content/articles
+
+# ---------------------------------------------------------------------------
+# Shared field groups (reusable across collections)
+# ---------------------------------------------------------------------------
+_defaults:
+  input_options:
+    markdown: true
+
+_common_schema: &common_schema
+  - key: title
+    type: text
+    label: Title
+  - key: description
+    type: textarea
+    label: Description
+  - key: pubDate
+    type: date
+    label: Publish Date
+  - key: updatedDate
+    type: date
+    label: Last Updated
+    default: ""
+  - key: draft
+    type: checkbox
+    label: Draft
+    default: false
+  - key: featured
+    type: checkbox
+    label: Featured
+    default: false
+  - key: order
+    type: number
+    label: Sort Order
+    default: ""
+  - key: tags
+    type: array
+    label: Tags
+  - key: related
+    type: array
+    label: Related Posts
+    default: []
+  - key: image
+    type: image
+    label: Cover Image
+    default: ""
+  - key: seoTitle
+    type: text
+    label: SEO Title
+  - key: seoDescription
+    type: textarea
+    label: SEO Description
+
+# ---------------------------------------------------------------------------
+# Content collections
+# ---------------------------------------------------------------------------
+collections:
+  articles:
+    name: "📝 Articles"
+    path: src/content/articles
+    output: true
+    filter: strict
+    create:
+      path: "{title|slugify}.md"
+    schema:
+      <<: *common_schema
+    sort:
+      key: pubDate
+      direction: desc
+
+  notes:
+    name: "📔 Notes"
+    path: src/content/notes
+    output: true
+    filter: strict
+    create:
+      path: "{title|slugify}.md"
+    schema:
+      <<: *common_schema
+    sort:
+      key: pubDate
+      direction: desc
+
+  projects:
+    name: "🚀 Projects"
+    path: src/content/projects
+    output: true
+    filter: strict
+    create:
+      path: "{title|slugify}.md"
+    schema:
+      <<: *common_schema
+    sort:
+      key: order
+      direction: asc
+
+  resources:
+    name: "📚 Resources"
+    path: src/content/resources
+    output: true
+    filter: strict
+    create:
+      path: "{title|slugify}.md"
+    schema:
+      <<: *common_schema
+    sort:
+      key: order
+      direction: asc
+
+  weekly:
+    name: "📅 Weekly"
+    path: src/content/weekly
+    output: true
+    filter: strict
+    create:
+      path: "{title|slugify}.md"
+    schema:
+      <<: *common_schema
+    sort:
+      key: pubDate
+      direction: desc
+
+  garden:
+    name: "🌱 Garden"
+    path: src/content/garden
+    output: true
+    filter: strict
+    create:
+      path: "{title|slugify}.md"
+    schema:
+      <<: *common_schema
+      - key: status
+        type: select
+        label: Growth Stage
+        options:
+          - seedling
+          - budding
+          - evergreen
+        default: seedling
+    sort:
+      key: pubDate
+      direction: desc
+
+# ---------------------------------------------------------------------------
+# CloudCannon site-level settings
+# ---------------------------------------------------------------------------
+paths:
+  static: public
+  uploads: public/uploads
+
+# Build config for CloudCannon's built-in staging
+build:
+  command: npm run build
+  output: dist
