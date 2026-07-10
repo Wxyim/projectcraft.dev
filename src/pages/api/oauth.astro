@@ -28,7 +28,11 @@ const clientSecret = env.GITHUB_CLIENT_SECRET || '';
 
 // ---- GitHub callback: exchange code for token, hand it back to Decap ----
 if (code) {
-  let body: string;
+  let status: string;
+  let detail: string;
+  let msgKind: 'success' | 'error';
+  let payload: string; // JSON string sent to Decap via postMessage
+
   try {
     const res = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -38,33 +42,47 @@ if (code) {
     const data: any = await res.json();
 
     if (data.error || !data.access_token) {
-      const err = JSON.stringify({ message: data.error_description || data.error || 'token exchange failed' });
-      body = `<script>
-        if (window.opener) {
-          window.opener.postMessage("authorization:github:error:${err}", "*");
-          setTimeout(() => window.close(), 1000);
-        }
-      </script>`;
+      msgKind = 'error';
+      status = '❌ Token exchange failed';
+      detail = data.error_description || data.error || 'token exchange failed';
+      payload = JSON.stringify({ message: detail });
     } else {
-      const ok = JSON.stringify({ token: data.access_token, provider: 'github' });
-      body = `<script>
-        if (window.opener) {
-          window.opener.postMessage("authorization:github:success:${ok}", "*");
-          setTimeout(() => window.close(), 1000);
-        } else {
-          document.write('<p style="font-family:sans-serif;padding:2rem">Authenticated. You may close this tab.</p>');
-        }
-      </script>`;
+      msgKind = 'success';
+      status = '✅ Authenticated';
+      detail = 'token: ' + String(data.access_token).slice(0, 10) + '… (sent to CMS)';
+      payload = JSON.stringify({ token: data.access_token, provider: 'github' });
     }
   } catch (e: any) {
-    const err = JSON.stringify({ message: e?.message || 'fetch failed' });
-    body = `<script>
-      if (window.opener) {
-        window.opener.postMessage("authorization:github:error:${err}", "*");
-        setTimeout(() => window.close(), 1000);
-      }
-    </script>`;
+    msgKind = 'error';
+    status = '❌ Proxy error';
+    detail = e?.message || 'fetch failed';
+    payload = JSON.stringify({ message: detail });
   }
+
+  const prefix = 'authorization:github:' + msgKind + ':';
+  // Escape for safe embedding in HTML text and in a JS string literal.
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const payloadJs = JSON.stringify(prefix + payload); // a quoted JS string
+
+  const body = `<div style="font-family:system-ui,sans-serif;padding:2rem">
+    <h2>${esc(status)}</h2>
+    <pre style="white-space:pre-wrap;word-break:break-all">${esc(detail)}</pre>
+    <p id="log" style="color:#666">opener: …</p>
+  </div>
+  <script>
+    (function () {
+      var log = document.getElementById('log');
+      var opener = window.opener;
+      log.textContent = 'opener: ' + !!opener;
+      if (opener) {
+        try { opener.postMessage(${payloadJs}, '*'); log.textContent += ' | message sent'; }
+        catch (e) { log.textContent += ' | postMessage error: ' + e.message; }
+        setTimeout(function () { window.close(); }, 1200);
+      } else {
+        log.textContent += ' | NO opener — open this from /admin/';
+      }
+    })();
+  </script>`;
 
   return new Response('<!DOCTYPE html><html><body style="margin:0">' + body + '</body></html>', {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
