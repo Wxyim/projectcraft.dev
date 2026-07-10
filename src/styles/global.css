@@ -545,11 +545,17 @@ input {
 
 .prose .footnotes li {
   margin-bottom: 4px;
+  scroll-margin-top: 84px;
 }
 
 .prose .footnotes a[rev="footnote"] {
   margin-left: 4px;
   text-decoration: none;
+}
+
+/* Ensure all anchor targets clear the sticky header */
+.prose [id^="fn"] {
+  scroll-margin-top: 84px;
 }
 
 .prose code:not(pre code) {
