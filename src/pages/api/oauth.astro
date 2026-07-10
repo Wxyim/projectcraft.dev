@@ -1,40 +1,21 @@
 ---
-const url = Astro.url;
-const code = url.searchParams.get('code');
-const redirectUri = url.origin + '/api/oauth';
-const env = (Astro.locals as any)?.runtime?.env ?? {};
-
-if (!code) {
-  const gh = new URL('https://github.com/login/oauth/authorize');
-  gh.searchParams.set('client_id', env.GITHUB_CLIENT_ID || '');
-  gh.searchParams.set('scope', 'repo,user');
-  gh.searchParams.set('redirect_uri', redirectUri);
-  return new Response(null, { status: 302, headers: { Location: gh.toString() } });
-}
-
-let result = '';
 try {
-  const res = await fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id: env.GITHUB_CLIENT_ID,
-      client_secret: env.GITHUB_CLIENT_SECRET,
-      code,
-    }),
-  });
-  const data = await res.json();
-  if (data.error || !data.access_token) {
-    result = '<h1>Auth Failed</h1><p>' + (data.error_description || data.error || 'Unknown') + '</p>';
-  } else {
-    const p = JSON.stringify({ token: data.access_token, provider: 'github' });
-    result = '<script>(function(){if(window.opener){window.opener.postMessage(' + p + ',window.opener.location.origin);window.close();}else{document.body.innerHTML="<p>Done - close this tab.</p>";}})();</script>';
-  }
-} catch (err) {
-  result = '<h1>Error</h1><p>' + err.message + '</p>';
-}
+  const code = Astro.url.searchParams.get('code');
 
-return new Response('<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem">' + result + '</body></html>', {
-  headers: { 'Content-Type': 'text/html; charset=utf-8' },
-});
+  if (!code) {
+    // Redirect to GitHub OAuth - skip for now, just confirm Astro globals work
+    return new Response('step1: astro.url works, no code param | origin=' + Astro.url.origin, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+
+  return new Response('step2: got code=' + code, {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+} catch (e) {
+  return new Response('ERROR: ' + e, {
+    status: 500,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+}
 ---
