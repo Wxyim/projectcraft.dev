@@ -1,5 +1,53 @@
 ---
-return new Response("oauth route works", {
-  headers: { "Content-Type": "text/plain; charset=utf-8" }
-});
+const url = Astro.url;
+const code = url.searchParams.get('code');
+const redirectUri = url.origin + '/api/oauth';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+
+if (!code) {
+  const gh = new URL('https://github.com/login/oauth/authorize');
+  gh.searchParams.set('client_id', env.GITHUB_CLIENT_ID || '');
+  gh.searchParams.set('scope', 'repo,user');
+  gh.searchParams.set('redirect_uri', redirectUri);
+  return new Response(null, { status: 302, headers: { Location: gh.toString() } });
+}
+
+let html: string;
+try {
+  const res = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      client_id: env.GITHUB_CLIENT_ID,
+      client_secret: env.GITHUB_CLIENT_SECRET,
+      code,
+    }),
+  });
+  const data: any = await res.json();
+  if (data.error || !data.access_token) {
+    html = page('Auth Failed', data.error_description || data.error || 'Unknown');
+  } else {
+    html = postToken(data.access_token);
+  }
+} catch (err: any) {
+  html = page('Error', err.message);
+}
+
+return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 ---
+
+function page(title: string, detail: string) {
+  return `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem"><h1>❌ ${title}</h1><p>${detail}</p></body></html>`;
+}
+
+function postToken(token: string) {
+  const p = JSON.stringify({ token, provider: 'github' });
+  return `<!DOCTYPE html>
+<html><head><title>Signing in…</title></head><body>
+<script>
+(function(){
+  if(window.opener){window.opener.postMessage(${p},window.opener.location.origin);window.close();}
+  else{document.body.innerHTML='<p style="font-family:sans-serif;padding:2rem">✅ Done &mdash; close this tab.</p>';}
+})();
+</script></body></html>`;
+}
