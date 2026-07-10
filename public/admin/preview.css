@@ -148,9 +148,10 @@ summary { cursor: pointer; font-weight: 600; }
 
 .footnotes li {
   margin-bottom: 4px;
+  scroll-margin-top: 84px;
 }
 
-.footnotes a[rev="footnote"] {
+.footnotes .data-footnote-backref {
   margin-left: 4px;
   text-decoration: none;
 }
