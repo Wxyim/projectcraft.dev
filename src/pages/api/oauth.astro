@@ -1,0 +1,118 @@
+---
+// Decap CMS GitHub OAuth proxy (same-origin).
+//
+// Decap's github backend has no client-only auth flow — it talks to a proxy
+// via the Netlify-authenticator protocol (the `iP` client in decap-cms.js).
+// This endpoint implements that protocol so the proxy runs on our own origin
+// (base_url: https://projectcraft.dev, auth_endpoint: api/oauth).
+//
+// Protocol:
+//   1. Decap opens a popup to {base_url}/{auth_endpoint}?provider=github&...
+//   2. Popup posts "authorizing:github" to opener; opener echoes it back
+//      (this is how Decap registers its success/error listener).
+//   3. On echo, popup redirects to GitHub authorize.
+//   4. GitHub redirects back here with ?code=... — we exchange it server-side
+//      and render a page that posts
+//      "authorization:github:success:{...token...}" to the opener.
+//
+// Required Worker env: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET.
+
+import { env } from 'cloudflare:workers';
+
+const url = Astro.url;
+const code = url.searchParams.get('code');
+const scope = url.searchParams.get('scope') || 'repo';
+const redirectUri = url.origin + '/api/oauth';
+const clientId = env.GITHUB_CLIENT_ID || '';
+const clientSecret = env.GITHUB_CLIENT_SECRET || '';
+
+// ---- GitHub callback: exchange code for token, hand it back to Decap ----
+if (code) {
+  let body: string;
+  try {
+    const res = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code, redirect_uri: redirectUri }),
+    });
+    const data: any = await res.json();
+
+    if (data.error || !data.access_token) {
+      const err = JSON.stringify({ message: data.error_description || data.error || 'token exchange failed' });
+      body = `<script>
+        if (window.opener) {
+          window.opener.postMessage("authorization:github:error:${err}", "*");
+          setTimeout(() => window.close(), 1000);
+        }
+      </script>`;
+    } else {
+      const ok = JSON.stringify({ token: data.access_token, provider: 'github' });
+      body = `<script>
+        if (window.opener) {
+          window.opener.postMessage("authorization:github:success:${ok}", "*");
+          setTimeout(() => window.close(), 1000);
+        } else {
+          document.write('<p style="font-family:sans-serif;padding:2rem">Authenticated. You may close this tab.</p>');
+        }
+      </script>`;
+    }
+  } catch (e: any) {
+    const err = JSON.stringify({ message: e?.message || 'fetch failed' });
+    body = `<script>
+      if (window.opener) {
+        window.opener.postMessage("authorization:github:error:${err}", "*");
+        setTimeout(() => window.close(), 1000);
+      }
+    </script>`;
+  }
+
+  return new Response('<!DOCTYPE html><html><body style="margin:0">' + body + '</body></html>', {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  });
+}
+
+// ---- Initial popup load: run the handshake, then redirect to GitHub ----
+const authorizeUrl = 'https://github.com/login/oauth/authorize'
+  + '?client_id=' + encodeURIComponent(clientId)
+  + '&redirect_uri=' + encodeURIComponent(redirectUri)
+  + '&scope=' + encodeURIComponent(scope)
+  + '&state='; // state filled client-side below
+
+const handshake = `<script>
+  (function () {
+    var opener = window.opener;
+    if (!opener) {
+      document.write('<p style="font-family:sans-serif;padding:2rem">This page is meant to be opened from the CMS admin.</p>');
+      return;
+    }
+    // Step 2: tell Decap we're authorizing. It will echo this back once its
+    // success/error listener is registered.
+    opener.postMessage("authorizing:github", "*");
+
+    // Step 3: once Decap echoes, redirect to GitHub to start OAuth.
+    var started = false;
+    function proceed() {
+      if (started) return;
+      started = true;
+      var state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      try { sessionStorage.setItem('decap-oauth-state', state); } catch (e) {}
+      window.location.href = ${JSON.stringify(authorizeUrl)} + state;
+    }
+    function onEcho(e) {
+      if (e.data === "authorizing:github") {
+        window.removeEventListener('message', onEcho, false);
+        proceed();
+      }
+    }
+    window.addEventListener('message', onEcho, false);
+    // Safety net: if the echo never arrives, proceed after a short delay so
+    // we don't hang the popup. The echo is near-instant same-origin, so this
+    // only triggers if something went wrong on the Decap side.
+    setTimeout(proceed, 2000);
+  })();
+</script>`;
+
+return new Response('<!DOCTYPE html><html><body style="margin:0">' + handshake + '</body></html>', {
+  headers: { 'Content-Type': 'text/html; charset=utf-8' },
+});
+---

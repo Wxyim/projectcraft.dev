@@ -7,21 +7,23 @@ logo_url: https://projectcraft.dev/logo.png
 locale: zh_CN
 
 # ---------------------------------------------------------------------------
-# Backend — GitHub OAuth via PKCE (no server / no secret needed)
-# Decap opens a popup to GitHub; on success it redirects back to /admin/
-# with the auth code, which Decap exchanges client-side using PKCE.
+# Backend — GitHub OAuth via a same-origin proxy on this Worker
+#
+# Decap's github backend REQUIRES an OAuth proxy (it has no client-only
+# implicit/pkce flow for GitHub — those only exist for GitLab/Azure/Gitea).
+# base_url + auth_endpoint point Decap at our own /api/oauth endpoint, which
+# speaks the Netlify-authenticator handshake protocol Decap expects.
 #
 # Setup (one-time, in GitHub):
 #   https://github.com/settings/developers → your OAuth App →
-#   Authorization callback URL = https://projectcraft.dev/admin/
-#   app_id below = the OAuth App's Client ID
+#   Authorization callback URL = https://projectcraft.dev/api/oauth
 # ---------------------------------------------------------------------------
 backend:
   name: github
   repo: Wxyim/projectcraft.dev
   branch: main
-  auth_type: pkce
-  app_id: Ov23liWISCKJJvhWybtZ
+  base_url: https://projectcraft.dev
+  auth_endpoint: api/oauth
 
 # ---------------------------------------------------------------------------
 # Media / uploads

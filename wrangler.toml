@@ -3,5 +3,10 @@ compatibility_date = "2026-07-09"
 workers_dev = false
 preview_urls = false
 
-# Decap CMS uses PKCE auth (client-side GitHub OAuth) — no server-side
-# OAuth vars or secret are needed. See public/admin/config.yml.
+[vars]
+# GitHub OAuth App client ID (non-sensitive — visible in authorize URLs).
+# Used by the Decap OAuth proxy at src/pages/api/oauth.astro.
+GITHUB_CLIENT_ID = "Ov23liWISCKJJvhWybtZ"
+
+# GITHUB_CLIENT_SECRET is set via `wrangler secret put GITHUB_CLIENT_SECRET`
+# (do NOT commit it here). Required by the proxy to exchange the auth code.
