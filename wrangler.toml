@@ -5,7 +5,7 @@ preview_urls = false
 
 [vars]
 # Non-sensitive — visible in OAuth URLs
-GITHUB_CLIENT_ID = ""
+GITHUB_CLIENT_ID = "Ov23liWISCKJJvhWybtZ"
 
 # GITHUB_CLIENT_SECRET 不要写在这里！
 # 用 wrangler secret put GITHUB_CLIENT_SECRET 设置，secret 不会被部署覆盖
