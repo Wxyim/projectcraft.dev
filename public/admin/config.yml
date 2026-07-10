@@ -7,14 +7,21 @@ logo_url: https://projectcraft.dev/logo.png
 locale: zh_CN
 
 # ---------------------------------------------------------------------------
-# Backend — GitHub (Personal Access Token)
-# On first login, paste a GitHub classic PAT with "repo" scope.
-# Generate: https://github.com/settings/tokens → Generate new token (classic)
+# Backend — GitHub OAuth via PKCE (no server / no secret needed)
+# Decap opens a popup to GitHub; on success it redirects back to /admin/
+# with the auth code, which Decap exchanges client-side using PKCE.
+#
+# Setup (one-time, in GitHub):
+#   https://github.com/settings/developers → your OAuth App →
+#   Authorization callback URL = https://projectcraft.dev/admin/
+#   app_id below = the OAuth App's Client ID
 # ---------------------------------------------------------------------------
 backend:
   name: github
   repo: Wxyim/projectcraft.dev
   branch: main
+  auth_type: pkce
+  app_id: Ov23liWISCKJJvhWybtZ
 
 # ---------------------------------------------------------------------------
 # Media / uploads
