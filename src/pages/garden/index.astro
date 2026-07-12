@@ -158,9 +158,9 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
                 const daysAgo = Math.floor((Date.now() - lastDate.valueOf()) / 86400000);
                 const tendedLabel = daysAgo === 0 ? '今天打理' : `${daysAgo} 天前打理`;
                 return (
-                  <a class="tree-leaf" href={getEntryUrl(entry)} title={tendedLabel}>
+                  <a class="tree-leaf" href={getEntryUrl(entry)}>
                     <span class="leaf-status" title={statusLabel(st, entry)}>{statusIcon(entry)}</span>
-                    <span class="leaf-title">{entry.data.title}</span>
+                    <span class="leaf-title" title={entry.data.title}>{entry.data.title}</span>
                     {st && st !== 'evergreen' && <span class={`growth-dot ${st}`} title={statusLabel(st, entry)}></span>}
                     {entry.data.updatedDate && <span class="tended-badge" title={tendedLabel}>{daysAgo === 0 ? '今天' : `${daysAgo}d`}</span>}
                     <span class="link-count strength-{Math.min(count, 5)}" title={`${count} connections`}>{count}</span>
@@ -185,7 +185,7 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
             <div class="graph-node" data-expanded="false">
               <div class="graph-node-header">
                 <span class="leaf-status">{statusIcon(entry)}</span>
-                <a class="graph-node-title-link" href={getEntryUrl(entry)}>{entry.data.title}</a>
+                <a class="graph-node-title-link" href={getEntryUrl(entry)} title={entry.data.title}>{entry.data.title}</a>
                 <span class="graph-node-badge">{allRelated.length + c.upstream.length}</span>
                 <button class="graph-toggle-btn" type="button" aria-label="Toggle connections">▸</button>
               </div>
@@ -244,7 +244,7 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
               return (
                 <tr class={totalConn(entry) === 0 ? 'orphan-row' : ''}>
                   <td>{statusIcon(entry)}</td>
-                  <td><a href={getEntryUrl(entry)}>{entry.data.title}</a></td>
+                  <td><a href={getEntryUrl(entry)} title={entry.data.title}>{entry.data.title}</a></td>
                   <td><span class="type-chip">{entry.collection}</span></td>
                   <td>
                     {st ? (
@@ -633,6 +633,8 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
   .gardentable tbody tr:last-child td { border-bottom: none; }
   .gardentable a { font-weight: 600; text-decoration: none; }
   .gardentable a:hover { color: var(--accent); }
+  .gardentable td:nth-child(2) { max-width: 200px; }
+  .gardentable td:nth-child(2) a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .type-chip {
     font-size: 0.75rem;
