@@ -282,7 +282,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   /* Floating buttons — unified style */
   .float-btn {
     position: fixed;
-    right: 20px;
+    right: max(20px, calc((100vw - var(--max)) / 2 + 20px));
     z-index: 50;
     width: 36px;
     height: 36px;
@@ -317,7 +317,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   /* TOC panel */
   .toc-panel {
     position: fixed;
-    right: 68px;
+    right: max(68px, calc((100vw - var(--max)) / 2 + 68px));
     bottom: 80px;
     width: 260px;
     max-height: 0;
@@ -386,6 +386,13 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     .float-btn { right: 10px; }
     .toc-panel { right: 54px; width: 220px; }
     .back-to-top { bottom: 20px; }
+  }
+
+  @media (max-width: 480px) {
+    .toc-panel {
+      right: 10px;
+      width: calc(100vw - 64px);
+    }
   }
 
   .garden-cta {
