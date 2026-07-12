@@ -71,7 +71,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         </span>
       )}
       <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate)}</time>
-      {entry.data.updatedDate && <span>{collection === 'garden' ? 'Last tended' : 'Updated'} {formatDate(entry.data.updatedDate)}</span>}
+      {entry.data.updatedDate && <span>{collection === 'garden' ? 'Last tended' : 'Last updated'} {formatDate(entry.data.updatedDate)}</span>}
     </div>
     <h1>{entry.data.title}</h1>
     {entry.data.image && <img class="cover-image" src={entry.data.image} alt={entry.data.title} />}
