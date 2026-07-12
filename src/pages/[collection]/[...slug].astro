@@ -70,9 +70,11 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         {entry.data.tags.map((tag) => <span class="tag">{tag}</span>)}
       </div>
     )}
-    <div class="garden-cta">
-      <a href="/garden/#garden-tabs">🌱 在数字花园中查看关联</a>
-    </div>
+    {(collection === 'notes' || collection === 'articles' || collection === 'garden') && (
+      <div class="garden-cta">
+        <a href="/garden/#garden-tabs">🌱 在数字花园中查看关联</a>
+      </div>
+    )}
     <Content />
     <footer class="prose-footer">
       {(related.length > 0 || upstream.length > 0) && (
