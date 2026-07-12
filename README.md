@@ -79,16 +79,24 @@ related:
 
 Articles / Notes / Projects / Resources / Weekly / Garden 的列表页**统一按 `pubDate` 倒序**（最新在前），其次按 `updatedDate` 倒序。`order` 字段不影响列表页排序。
 
-### 首页排序（`order` 字段）
+### 首页展示规则
 
-`order` 字段**仅影响首页 Featured 区块**——即 Projects / Articles / Resources 中 `featured: true` 的条目。Notes / Weekly / Garden 不在首页 Featured 区展示。
+各区块在首页的筛选、排序和展示数量（来源 `src/pages/index.astro`）：
 
-排序逻辑：
+| 首页区块 | 筛选条件 | 排序 | 展示条数 |
+|---|---|---|---|
+| Projects | `featured: true` | `order` 升序 → `pubDate` 倒序 | 4 |
+| Articles | `featured: true` | `order` 升序 → `pubDate` 倒序 | 3 |
+| Resources | `featured: true` | `order` 升序 → `pubDate` 倒序 | 4 |
+| Notes | 无（全部发布内容） | `pubDate` 倒序 | 8 |
+| Weekly | 无（全部发布内容） | `pubDate` 倒序 | 4 |
+| Garden | 不在首页展示 | — | — |
+
+`order` 字段**仅对 Projects / Articles / Resources 的 Featured 排序生效**：
 - 按 `order` **升序**排列，数值越小越靠前
-- 未设置 `order` 的条目默认值为 `999`，排在最后
-- `order` 相同时，按 `pubDate` 倒序（最新优先）作为次级排序
-
-推荐做法：**使用跳号（10、20、30…）**，方便日后在任意位置插入新条目而不必修改其他文件。
+- 未设置 `order` 默认 `999`，排在最后
+- `order` 相同时按 `pubDate` 倒序作为次级排序
+- 推荐使用跳号（10、20、30…），方便日后插入
 
 ```yaml
 # ✅ 推荐：跳号

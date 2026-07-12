@@ -244,11 +244,11 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
                     )}
                   </td>
                   <td class="date-cell">
-                    {new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' }).format(entry.data.pubDate)}
+                    {new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(entry.data.pubDate)}
                   </td>
                   <td class="date-cell">
                     {entry.data.updatedDate
-                      ? new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' }).format(entry.data.updatedDate)
+                      ? new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(entry.data.updatedDate)
                       : '—'}
                   </td>
                   <td>{entry.data.tags.map((t) => <span class="tag">{t}</span>)}</td>

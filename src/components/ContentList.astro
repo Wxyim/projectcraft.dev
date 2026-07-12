@@ -14,6 +14,9 @@ const { entries, showCollection = false } = Astro.props;
     <article class="entry">
       <div class="meta">
         <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate)}</time>
+        {entry.data.updatedDate && (
+          <time datetime={entry.data.updatedDate.toISOString()}>更新于 {formatDate(entry.data.updatedDate)}</time>
+        )}
         {showCollection && <span>{collectionLabel(entry.collection)}</span>}
       </div>
       <h2><a href={getEntryUrl(entry)}>{entry.data.title}</a></h2>
