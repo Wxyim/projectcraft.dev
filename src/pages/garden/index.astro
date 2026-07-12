@@ -23,7 +23,19 @@ function sortByTypeMaturity(a: AnyEntry, b: AnyEntry): number {
   return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
 }
 
-allEntries.sort(sortByTypeMaturity);
+// Graph & List: pubDate first, then maturity (for garden entries)
+function sortByTypeDate(a: AnyEntry, b: AnyEntry): number {
+  const ca = collOrder[a.collection] ?? 2;
+  const cb = collOrder[b.collection] ?? 2;
+  if (ca !== cb) return ca - cb;
+  const d = b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+  if (d !== 0) return d;
+  const sa: string = (a.data as any).status || (a.collection === 'garden' ? 'seedling' : '');
+  const sb: string = (b.data as any).status || (b.collection === 'garden' ? 'seedling' : '');
+  return (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
+}
+
+allEntries.sort(sortByTypeDate);
 
 // Build tree: branch sort by garden-first, then latest pubDate desc
 // Within branch: type → maturity → pubDate desc
