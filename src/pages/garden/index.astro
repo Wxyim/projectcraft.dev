@@ -6,10 +6,11 @@ import { getPublishedCollection, getEntryUrl, buildTagTree, getTagRelated, getEx
 const meta = collections.garden;
 const gardenEntries = await getPublishedCollection('garden');
 const notesEntries = await getPublishedCollection('notes');
-const allEntries: AnyEntry[] = [...gardenEntries, ...notesEntries];
+const articlesEntries = await getPublishedCollection('articles');
+const allEntries: AnyEntry[] = [...gardenEntries, ...notesEntries, ...articlesEntries];
 
 // Utility: sort entries: garden first, then by maturity within each type
-const collOrder: Record<string, number> = { garden: 0, notes: 1 };
+const collOrder: Record<string, number> = { garden: 0, notes: 1, articles: 2 };
 const statusOrder: Record<string, number> = { evergreen: 0, budding: 1, seedling: 2 };
 function sortByTypeMaturity(a: AnyEntry, b: AnyEntry): number {
   const ca = collOrder[a.collection] ?? 2;
