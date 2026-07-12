@@ -121,6 +121,24 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
       <div class="giscus-wrapper"><Giscus /></div>
     </footer>
   </article>
+  {toc.length > 0 && (
+    <script>
+      const tocLinks = document.querySelectorAll('.toc a');
+      const headings = Array.from(tocLinks).map((a) => document.getElementById(a.getAttribute('href')?.slice(1) || '')).filter(Boolean);
+      const observer = new IntersectionObserver((entries) => {
+        let activeId = null;
+        for (const e of entries) {
+          if (e.isIntersecting) { activeId = e.target.id; break; }
+        }
+        if (activeId) {
+          tocLinks.forEach((a) => a.style.color = '');
+          const active = document.querySelector('.toc a[href="#' + CSS.escape(activeId) + '"]');
+          if (active) active.style.color = 'var(--accent)';
+        }
+      }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+      headings.forEach((h) => observer.observe(h));
+    </script>
+  )}
 </BaseLayout>
 
 <style>
@@ -131,6 +149,8 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     border-radius: 12px;
     margin: 4px 0 20px;
   }
+
+  .prose-footer { clear: both; }
 
   .related-notes {
     margin-bottom: 20px;
@@ -177,9 +197,23 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     background: var(--bg-soft);
   }
 
+  @media (min-width: 900px) {
+    .toc {
+      float: right;
+      position: sticky;
+      top: 80px;
+      width: 220px;
+      margin-left: 32px;
+      margin-bottom: 32px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      z-index: 1;
+    }
+  }
+
   .toc h2 {
     margin: 0 0 10px;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -200,9 +234,11 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   .toc-depth-3 { padding-left: 16px; font-size: 0.9rem; }
 
   .toc a {
+    display: block;
     text-decoration: none;
     color: var(--muted);
     transition: color 0.15s;
+    padding: 2px 0;
   }
 
   .toc a:hover { color: var(--accent); }
