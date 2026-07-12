@@ -44,10 +44,12 @@ function matchRelated(ref: string, entry: AnyEntry): boolean {
   return ref === entry.id || ref === full;
 }
 
-/** Get entries explicitly listed in the entry's `related` field. */
+/** Get entries explicitly listed in the entry's `related` field (preserves writing order). */
 export function getExplicitRelated(entry: AnyEntry, all: AnyEntry[]): AnyEntry[] {
   const refs = entry.data.related ?? [];
-  return all.filter((e) => e.id !== entry.id && refs.some((r) => matchRelated(r, e)));
+  return refs
+    .map((r) => all.find((e) => e.id !== entry.id && matchRelated(r, e)))
+    .filter(Boolean) as AnyEntry[];
 }
 
 /** Get entries that share tags with this entry (sorted by overlap count). */
