@@ -4,7 +4,7 @@ description: 测试 Astro 对 Markdown 各种常用格式的渲染效果。
 pubDate: 2026-07-09
 draft: false
 featured: true
-order: 3
+order: 30
 tags:
   - Markdown
   - Demo
