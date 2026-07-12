@@ -133,9 +133,9 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
   <!-- Tabbed views -->
   <section class="container section">
     <div class="tab-bar">
-      <button class="tab" data-tab="tree">🗂️ Tree</button>
-      <button class="tab" data-tab="graph">🔗 Graph</button>
-      <button class="tab" data-tab="list">📋 List</button>
+      <button class="tab" data-tab="tree"><span class="tab-icon">🗂️</span> <span class="tab-label">Tree</span></button>
+      <button class="tab" data-tab="graph"><span class="tab-icon">🔗</span> <span class="tab-label">Graph</span></button>
+      <button class="tab" data-tab="list"><span class="tab-icon">📋</span> <span class="tab-label">List</span></button>
       <span class="count-badge">{allEntries.length} cards</span>
     </div>
 
@@ -426,6 +426,14 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
   .tab:hover {
     color: var(--text);
     border-color: var(--accent);
+  }
+
+  .tab-icon { display: inline; }
+  .tab-label { display: inline; }
+
+  @media (max-width: 480px) {
+    .tab-label { display: none; }
+    .tab { padding: 6px 10px; font-size: 1rem; }
   }
 
   .tab.active {
