@@ -193,24 +193,40 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         var headings = Array.from(tocLinks).map(function(a) { return document.getElementById(a.getAttribute('href')?.slice(1) || ''); }).filter(Boolean);
         headings.sort(function(a, b) { return a.offsetTop - b.offsetTop; });
 
-        // Track visibility ratio per heading — highlight the one with most visible area
-        var ratios = {};
-        var highlightObserver = new IntersectionObserver(function(entries) {
-          entries.forEach(function(e) {
-            ratios[e.target.id] = e.intersectionRatio;
-          });
-          // Find heading with highest ratio
-          var bestId = null, bestRatio = 0;
-          for (var id in ratios) {
-            if (ratios[id] > bestRatio) { bestRatio = ratios[id]; bestId = id; }
+        // Compute section boundaries: each heading[i]'s section spans from its offsetTop
+        // to heading[i+1]'s offsetTop (or page end for the last). Highlight the section
+        // that occupies the largest portion of the viewport.
+        function updateHighlight() {
+          var vh = window.innerHeight;
+          var scrollTop = window.scrollY;
+          var viewTop = scrollTop;
+          var viewBottom = scrollTop + vh;
+
+          var bestId = null, bestOverlap = 0;
+          for (var i = 0; i < headings.length; i++) {
+            var sectionTop = headings[i].offsetTop;
+            var sectionBottom = i + 1 < headings.length ? headings[i + 1].offsetTop : document.body.scrollHeight;
+            // Overlap between viewport and section
+            var overlapTop = Math.max(viewTop, sectionTop);
+            var overlapBottom = Math.min(viewBottom, sectionBottom);
+            var overlap = Math.max(0, overlapBottom - overlapTop);
+            if (overlap > bestOverlap) {
+              bestOverlap = overlap;
+              bestId = headings[i].id;
+            }
           }
+
           tocLinks.forEach(function(a) { a.style.color = ''; });
-          if (bestId && bestRatio > 0) {
+          if (bestId && bestOverlap > 0) {
             var link = panel.querySelector('a[href="#' + CSS.escape(bestId) + '"]');
             if (link) link.style.color = 'var(--accent)';
           }
-        }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
-        headings.forEach(function(h) { highlightObserver.observe(h); });
+        }
+
+        window.addEventListener('scroll', function() {
+          requestAnimationFrame(updateHighlight);
+        }, { passive: true });
+        updateHighlight();
       })();
     </script>
     </>
