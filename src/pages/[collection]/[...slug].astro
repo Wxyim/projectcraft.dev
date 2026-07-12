@@ -25,6 +25,10 @@ const related = [...getExplicitRelated(entry as AnyEntry, allEntries), ...getTag
   (e, i, arr) => arr.findIndex((x) => x.id === e.id) === i
 ).slice(0, 6);
 const upstream = getUpstream(entry as AnyEntry, allEntries);
+const relatedIds = new Set(related.map((e) => `${e.collection}/${e.id}`));
+const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
+  .filter((e) => !relatedIds.has(`${e.collection}/${e.id}`))
+  .slice(0, 3);
 ---
 
 <BaseLayout title={title} description={description} image={entry.data.image} type="article">
@@ -42,6 +46,9 @@ const upstream = getUpstream(entry as AnyEntry, allEntries);
         {entry.data.tags.map((tag) => <span class="tag">{tag}</span>)}
       </div>
     )}
+    <div class="garden-cta">
+      <a href="/garden/">🌱 在数字花园中查看关联</a>
+    </div>
     <Content />
     <footer class="prose-footer">
       {(related.length > 0 || upstream.length > 0) && (
@@ -63,6 +70,16 @@ const upstream = getUpstream(entry as AnyEntry, allEntries);
             </div>
           )}
         </nav>
+      )}
+      {suggestions.length > 0 && (
+        <div class="suggestions">
+          <p class="suggestions-hint">💡 写作建议：这些标签关联的条目尚未加入 related，可以手动添加：</p>
+          <div class="related-links">
+            {suggestions.map((r) => (
+              <a href={getEntryUrl(r)}>{r.data.title}<span class="suggest-ref"> → related: &quot;{r.collection}/{r.id}&quot;</span></a>
+            ))}
+          </div>
+        </div>
       )}
       <p><a href={getEntryUrl(entry)}>Permalink</a> · <small>内容采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license" target="_blank">CC BY-SA 4.0 <ArrowUpRight size={12} stroke-width={2} /></a> 许可</small></p>
       <div class="giscus-wrapper"><Giscus /></div>
@@ -114,5 +131,58 @@ const upstream = getUpstream(entry as AnyEntry, allEntries);
   .related-links a:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+
+  .garden-cta {
+    margin: 12px 0 20px;
+  }
+
+  .garden-cta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    border: 1px dashed var(--line);
+    border-radius: 999px;
+    padding: 4px 12px;
+    transition: all 0.15s;
+  }
+
+  .garden-cta a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    border-style: solid;
+  }
+
+  .suggestions {
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    background: var(--bg-soft);
+  }
+
+  .suggestions-hint {
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .suggest-ref {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 400;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .suggestions .related-links a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 14px;
+    border-radius: 10px;
   }
 </style>

@@ -7,19 +7,30 @@ interface Props {
 }
 
 const { entries, showCollection = false } = Astro.props;
+
+function daysAgo(date: Date): string {
+  const diff = Math.floor((Date.now() - date.valueOf()) / 86400000);
+  if (diff === 0) return '今天打理';
+  if (diff === 1) return '1 天前打理';
+  return `${diff} 天前打理`;
+}
 ---
 
 <div class="entry-list">
-  {entries.map((entry) => (
+  {entries.map((entry) => {
+    const lastDate = entry.data.updatedDate ?? entry.data.pubDate;
+    const tended = entry.data.updatedDate ? daysAgo(entry.data.updatedDate) : '';
+    return (
     <article class="entry">
       <div class="meta">
         <time datetime={entry.data.pubDate.toISOString()}>{formatDate(entry.data.pubDate)}</time>
-        {entry.data.updatedDate && (
-          <time datetime={entry.data.updatedDate.toISOString()}>更新于 {formatDate(entry.data.updatedDate)}</time>
-        )}
         {showCollection && <span>{collectionLabel(entry.collection)}</span>}
       </div>
-      <h2><a href={getEntryUrl(entry)}>{entry.data.title}</a></h2>
+      <h2>
+        <a href={getEntryUrl(entry)}>{entry.data.title}</a>
+        {tended && <span class="tended-badge" title={formatDate(entry.data.updatedDate!)}>{tended}</span>}
+        {entry.data.tags.length > 0 && <span class="tag-count-badge" title={`${entry.data.tags.length} 个标签`}>{entry.data.tags.length} tags</span>}
+      </h2>
       {entry.data.description && <p>{entry.data.description}</p>}
       {entry.data.tags.length > 0 && (
         <div class="tags" aria-label="Tags">
@@ -27,5 +38,52 @@ const { entries, showCollection = false } = Astro.props;
         </div>
       )}
     </article>
-  ))}
+    );
+  })}
+  <div class="garden-link">
+    <a href="/garden/">🌱 在数字花园中浏览关联 →</a>
+  </div>
 </div>
+
+<style>
+  .tended-badge {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+  .tag-count-badge {
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 600;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+
+  .garden-link {
+    margin-top: 24px;
+    text-align: center;
+  }
+
+  .garden-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 20px;
+    transition: all 0.15s;
+  }
+
+  .garden-link a:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+</style>
