@@ -45,23 +45,23 @@ const weekly = (await getPublishedCollection('weekly')).slice(0, 4);
 
   <section class="container home-section">
     <div class="home-section-header">
-      <h2>Notes</h2>
-      <a href="/notes/" aria-label="All Notes"><ArrowRight size={20} /></a>
-    </div>
-    <p class="section-lede">每一张卡片都是数字花园里的一颗种子。</p>
-    <div class="topic-list">
-      {notes.map((entry) => <a href={getEntryUrl(entry)} class="topic-pill">{entry.data.title}</a>)}
-    </div>
-  </section>
-
-  <section class="container home-section">
-    <div class="home-section-header">
       <h2>Articles</h2>
       <a href="/articles/" aria-label="All Articles"><ArrowRight size={20} /></a>
     </div>
     <p class="section-lede">慢下来写，让每棵知识树经得起时间的推敲。</p>
     <div class="link-list">
       {articles.map((entry) => <a href={getEntryUrl(entry)}>{entry.data.title}</a>)}
+    </div>
+  </section>
+
+  <section class="container home-section">
+    <div class="home-section-header">
+      <h2>Notes</h2>
+      <a href="/notes/" aria-label="All Notes"><ArrowRight size={20} /></a>
+    </div>
+    <p class="section-lede">每一张卡片都是数字花园里的一颗种子。</p>
+    <div class="topic-list">
+      {notes.map((entry) => <a href={getEntryUrl(entry)} class="topic-pill">{entry.data.title}</a>)}
     </div>
   </section>
 
