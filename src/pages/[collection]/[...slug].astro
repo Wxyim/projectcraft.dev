@@ -193,27 +193,24 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         var headings = Array.from(tocLinks).map(function(a) { return document.getElementById(a.getAttribute('href')?.slice(1) || ''); }).filter(Boolean);
         headings.sort(function(a, b) { return a.offsetTop - b.offsetTop; });
 
-        function updateHighlight() {
-          var scrollY = window.scrollY + 100; // offset for sticky header
-          var active = null;
-          for (var i = 0; i < headings.length; i++) {
-            if (headings[i].offsetTop <= scrollY) {
-              active = headings[i];
-            } else {
-              break;
-            }
+        // Track visibility ratio per heading — highlight the one with most visible area
+        var ratios = {};
+        var highlightObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(e) {
+            ratios[e.target.id] = e.intersectionRatio;
+          });
+          // Find heading with highest ratio
+          var bestId = null, bestRatio = 0;
+          for (var id in ratios) {
+            if (ratios[id] > bestRatio) { bestRatio = ratios[id]; bestId = id; }
           }
           tocLinks.forEach(function(a) { a.style.color = ''; });
-          if (active) {
-            var link = panel.querySelector('a[href="#' + CSS.escape(active.id) + '"]');
+          if (bestId && bestRatio > 0) {
+            var link = panel.querySelector('a[href="#' + CSS.escape(bestId) + '"]');
             if (link) link.style.color = 'var(--accent)';
           }
-        }
-
-        window.addEventListener('scroll', function() {
-          requestAnimationFrame(updateHighlight);
-        }, { passive: true });
-        updateHighlight();
+        }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+        headings.forEach(function(h) { highlightObserver.observe(h); });
       })();
     </script>
     </>
