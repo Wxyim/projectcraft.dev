@@ -33,10 +33,11 @@ const tree = buildTagTree(allEntries)
     entries: [...branch.entries].sort(sortByTypeMaturity)
   }))
   .sort((a, b) => {
-    const aHasGarden = a.entries.some((e) => e.collection === 'garden');
-    const bHasGarden = b.entries.some((e) => e.collection === 'garden');
-    if (aHasGarden !== bHasGarden) return aHasGarden ? -1 : 1;
-    // Latest pubDate in each branch
+    // Priority by best collection type in branch: garden(0) > notes(1) > articles(2)
+    const aBest = Math.min(...a.entries.map((e) => collOrder[e.collection] ?? 3));
+    const bBest = Math.min(...b.entries.map((e) => collOrder[e.collection] ?? 3));
+    if (aBest !== bBest) return aBest - bBest;
+    // Within same priority, latest pubDate desc
     const aLatest = Math.max(...a.entries.map((e) => e.data.pubDate.valueOf()));
     const bLatest = Math.max(...b.entries.map((e) => e.data.pubDate.valueOf()));
     return bLatest - aLatest;
