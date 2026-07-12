@@ -26,7 +26,7 @@ export const collections = {
   articles: { title: 'Articles', description: '慢下来写，让每棵知识树经得起时间的推敲。' },
   resources: { title: 'Resources', description: '为花园挑选的好工具，精心筛选的养料与水源。' },
   weekly: { title: 'Weekly', description: '园丁日志，记录花园里每周的生长与变化。' },
-  garden: { title: '数字花园', description: '将 Notes、Articles、Garden 自动组织成知识树，发现关联与上游知识。' }
+  garden: { title: '数字花园', description: '将 Notes 与 Articles 自动组织成知识树，发现关联与上游知识。' }
 } as const;
 
 export const nowItems = [
