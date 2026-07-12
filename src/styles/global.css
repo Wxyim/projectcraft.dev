@@ -465,11 +465,13 @@ input {
   border-radius: 8px;
   padding: 16px;
   font-family: var(--font-mono);
+  font-size: 0.85rem;
   font-variant-ligatures: none;
 }
 
 .prose pre code {
   font-family: var(--font-mono);
+  font-size: inherit;
   font-variant-ligatures: none;
 }
 
