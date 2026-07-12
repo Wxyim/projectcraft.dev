@@ -367,6 +367,12 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
       });
     });
 
+    // Initial sort indicator on Planted column (default server order)
+    var plantedTh = document.querySelector('[data-sort="planted"]');
+    if (plantedTh) {
+      plantedTh.querySelector('.sort-arrow').textContent = ' ▼';
+      currentSort = { key: 'planted', asc: false };
+    }
   })();
 </script>
 
