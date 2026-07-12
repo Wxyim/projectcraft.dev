@@ -11,48 +11,118 @@ npm run dev
 
 ## 写内容
 
-在这些目录里新增 Markdown 或 MDX 文件即可自动生成页面：
+### Collection 一览
 
-- `src/content/projects` — 项目作品
-- `src/content/notes` — 笔记卡片
-- `src/content/articles` — 长文
-- `src/content/resources` — 资源推荐
-- `src/content/weekly` — 周记
-- `src/content/garden` — 数字花园
+在对应目录下新增 Markdown 或 MDX 文件即可自动生成页面：
 
-Frontmatter 示例：
+| Collection | 目录 | 说明 | 专属字段 |
+|---|---|---|---|
+| Projects | `src/content/projects` | 项目作品 | — |
+| Notes | `src/content/notes` | 笔记卡片 | — |
+| Articles | `src/content/articles` | 长文 | — |
+| Resources | `src/content/resources` | 资源推荐 | — |
+| Weekly | `src/content/weekly` | 周记 | — |
+| Garden | `src/content/garden` | 数字花园 | `status` |
+
+### 通用 Frontmatter 字段
+
+所有 collection 均支持以下字段（详见 `src/content.config.ts`）：
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| `title` | string | ✅ 是 | — | 文章标题 |
+| `pubDate` | date | ✅ 是 | — | 发布日期，格式 `YYYY-MM-DD` |
+| `description` | string | 否 | `""` | 摘要描述，用于列表和 SEO |
+| `draft` | boolean | 否 | `false` | 设为 `true` 则不在站点中显示 |
+| `featured` | boolean | 否 | `false` | 设为 `true` 则在首页对应区块展示 |
+| `order` | number | 否 | `999` | 首页 Featured 排序权重，详见下方 |
+| `updatedDate` | date | 否 | — | 最后更新日期 |
+| `tags` | string[] | 否 | `[]` | 标签列表，用于分类和关联推荐 |
+| `related` | string[] | 否 | `[]` | 手动关联内容，格式 `collection/slug` |
+| `image` | string | 否 | — | 封面图路径，如 `/uploads/cover.png` |
+| `seoTitle` | string | 否 | — | 覆盖页面 `<title>`，不填则用 `title` |
+| `seoDescription` | string | 否 | — | 覆盖 `<meta description>`，不填则用 `description` |
+
+最小示例（仅必填字段）：
 
 ```yaml
 ---
-title: "标题"
-description: "摘要"
+title: "文章标题"
 pubDate: 2026-07-09
-tags: ["Astro", "Markdown"]
-draft: false
 ---
 ```
 
-可选字段：
+完整示例：
 
 ```yaml
-featured: true         # 在首页展示
-order: 1               # 排序权重（越小越靠前）
-updatedDate: 2026-07-10 # 最后更新日期
-image: /uploads/cover.png # 封面图
-seoTitle: "SEO 标题"   # 覆盖页面 title
-seoDescription: "SEO 摘要" # 覆盖 meta description
-related:               # 手动关联其他内容
-  - notes/markdown-first
-  - articles/some-post
+---
+title: "文章标题"
+description: "文章摘要"
+pubDate: 2026-07-09
+updatedDate: 2026-07-12
+draft: false
+featured: true
+order: 10
+tags:
+  - Java
+  - Redis
+image: /uploads/cover.png
+seoTitle: "自定义 SEO 标题"
+seoDescription: "自定义 SEO 摘要"
+related:
+  - notes/some-note
+  - articles/other-article
+---
 ```
 
-数字花园可额外设置生长阶段：
+### 列表页排序
+
+Articles / Notes / Projects / Resources / Weekly / Garden 的列表页**统一按 `pubDate` 倒序**（最新在前），其次按 `updatedDate` 倒序。`order` 字段不影响列表页排序。
+
+### 首页排序（`order` 字段）
+
+`order` 字段**仅影响首页 Featured 区块**——即 Projects / Articles / Resources 中 `featured: true` 的条目。Notes / Weekly / Garden 不在首页 Featured 区展示。
+
+排序逻辑：
+- 按 `order` **升序**排列，数值越小越靠前
+- 未设置 `order` 的条目默认值为 `999`，排在最后
+- `order` 相同时，按 `pubDate` 倒序（最新优先）作为次级排序
+
+推荐做法：**使用跳号（10、20、30…）**，方便日后在任意位置插入新条目而不必修改其他文件。
 
 ```yaml
-status: seedling       # seedling | budding | evergreen
+# ✅ 推荐：跳号
+# 想加一篇排最前 → order: 5
+# 插在 10 和 20 之间 → order: 15
+---
+order: 10
+---
+order: 20
+---
+order: 30
 ```
 
-Markdown 脚注：
+### Garden 专属字段
+
+数字花园（Garden）额外支持生长阶段字段：
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| `status` | enum | 否 | `seedling` | 生长阶段：`seedling` / `budding` / `evergreen` |
+
+```yaml
+---
+title: "数字花园"
+pubDate: 2026-07-09
+status: budding       # seedling（幼苗）| budding（抽芽）| evergreen（常青）
+---
+```
+
+- `seedling` — 刚种下的想法，内容还在生长中
+- `budding` — 已长出框架，持续补充细节
+- `evergreen` — 相对完整的常青笔记
+
+### Markdown 脚注
 
 ```markdown
 正文中需要注释的地方加[^1]，页面底部自动汇集脚注内容。
