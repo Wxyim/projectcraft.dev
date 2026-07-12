@@ -1,7 +1,7 @@
 ---
 title: "Cloudflare"
 description: "Cloudflare Pages, Workers, DNS, and edge platform notes."
-pubDate: 2026-07-05
+pubDate: 2026-07-09
 tags: ["Cloudflare", "DevOps", "Web"]
 draft: false
 ---

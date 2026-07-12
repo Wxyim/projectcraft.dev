@@ -1,7 +1,7 @@
 ---
 title: "Markdown-first publishing"
 description: "Keep writing friction low by putting content in structured collections."
-pubDate: 2026-07-07
+pubDate: 2026-07-09
 tags: ["Workflow"]
 draft: false
 ---

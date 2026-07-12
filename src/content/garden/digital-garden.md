@@ -2,6 +2,7 @@
 title: "数字花园"
 description: "A sample evergreen note for connected thinking."
 pubDate: 2026-07-09
+updatedDate: 2026-07-09
 tags: ["Workflow"]
 related: ["garden/how-to-garden"]
 status: evergreen

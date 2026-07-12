@@ -2,7 +2,6 @@
 title: "如何打理数字花园"
 description: "从种子到常青树：数字花园的写作方法与成长路径。"
 pubDate: 2026-07-09
-updatedDate: 2026-07-09
 tags: ["Workflow"]
 status: evergreen
 draft: false

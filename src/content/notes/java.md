@@ -1,7 +1,7 @@
 ---
 title: "Java"
 description: "Java runtime, concurrency, and ecosystem notes."
-pubDate: 2026-07-06
+pubDate: 2026-07-09
 tags: ["Java", "Backend"]
 draft: false
 ---

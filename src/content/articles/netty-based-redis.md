@@ -7,10 +7,7 @@ draft: false
 featured: true
 order: 5
 tags:
-  - Java
-  - Netty
-  - Redis
-  - Practice
+  - build-a-redis
 ---
 ### 前言
 　　之前使用 Java 模拟实现的 Redis 存在代码耦合严重，线程通信不灵活等问题，现在探索基于 Netty 框架的实现。

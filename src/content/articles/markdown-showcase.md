@@ -7,7 +7,6 @@ featured: true
 order: 30
 tags:
   - Markdown
-  - Demo
 image: /uploads/cover.png
 ---
 

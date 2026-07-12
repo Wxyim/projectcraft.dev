@@ -1,9 +1,8 @@
 ---
 title: "AI"
 description: "AI coding, agents, prompts, and engineering workflow notes."
-pubDate: 2026-07-02
-tags: ["AI", "Workflow"]
-related: ["notes/markdown-first"]
+pubDate: 2026-07-09
+tags: ["Workflow"]
 draft: false
 ---
 

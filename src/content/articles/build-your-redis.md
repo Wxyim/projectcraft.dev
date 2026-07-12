@@ -6,9 +6,9 @@ draft: false
 featured: true
 order: 10
 tags:
-  - Java
-  - Redis
-  - Practice
+  - build-a-redis
+related:
+  - articles/netty-based-redis
 image: /uploads/cover.png
 ---
 ### 前言
