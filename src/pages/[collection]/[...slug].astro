@@ -174,8 +174,8 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
             }
           }
 
-          // Auto-close TOC on scroll (if expanded) — 20px threshold
-          if (expanded && Math.abs(scrollY - lastScrollY) > 20) {
+          // Auto-close TOC on scroll (if expanded)
+          if (expanded && scrollY !== lastScrollY) {
             close();
           }
           lastScrollY = scrollY;
