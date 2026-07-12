@@ -221,28 +221,38 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
 
     <!-- List View -->
     <div class="tab-panel" id="tab-list">
-      <p class="section-lede">全部卡片的表格视图，按状态、日期、连接数一览。</p>
+      <p class="section-lede">全部卡片的表格视图，点击列标题排序。</p>
       <div class="gardentable-wrapper">
-        <table class="gardentable">
+        <table class="gardentable" id="list-table">
           <thead>
             <tr>
               <th></th>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Planted</th>
-              <th>Last tended</th>
+              <th class="sort-th" data-sort="title">Title <span class="sort-arrow"></span></th>
+              <th class="sort-th" data-sort="type">Type <span class="sort-arrow"></span></th>
+              <th class="sort-th" data-sort="status">Status <span class="sort-arrow"></span></th>
+              <th class="sort-th" data-sort="planted">Planted <span class="sort-arrow"></span></th>
+              <th class="sort-th" data-sort="tended">Last tended <span class="sort-arrow"></span></th>
               <th>Tags</th>
-              <th class="conn-th">→</th>
-              <th class="conn-th">←</th>
+              <th class="conn-th sort-th" data-sort="out" title="Outgoing connections">→ <span class="sort-arrow"></span></th>
+              <th class="conn-th sort-th" data-sort="in" title="Incoming connections">← <span class="sort-arrow"></span></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="list-tbody">
             {allEntries.map((entry) => {
               const c = getConn(entry);
               const st = entryStatus(entry);
+              const plantedTs = entry.data.pubDate.valueOf();
+              const tendedTs = entry.data.updatedDate ? entry.data.updatedDate.valueOf() : 0;
+              const collIdx = collOrder[entry.collection] ?? 3;
               return (
-                <tr class={totalConn(entry) === 0 ? 'orphan-row' : ''}>
+                <tr class={totalConn(entry) === 0 ? 'orphan-row' : ''}
+                    data-title={entry.data.title}
+                    data-type={collIdx}
+                    data-status={st ? (statusOrder[st] ?? 3) : (entry.collection === 'articles' ? 3 : 4)}
+                    data-planted={plantedTs}
+                    data-tended={tendedTs}
+                    data-out={outgoingConn(entry)}
+                    data-in={c.upstream.length}>
                   <td>{statusIcon(entry)}</td>
                   <td><a href={getEntryUrl(entry)} title={entry.data.title}>{entry.data.title}</a></td>
                   <td><span class="type-chip">{entry.collection}</span></td>
@@ -312,6 +322,49 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
       body.hidden = expanded;
     });
   });
+
+  // List table sorting
+  (function() {
+    var tbody = document.getElementById('list-tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var currentSort = { key: 'type', asc: true }; // default: garden first
+    var isNumeric = { planted: true, tended: true, out: true, in: true, type: true, status: true };
+
+    function sortBy(key, asc) {
+      rows.sort(function(a, b) {
+        var va = a.dataset[key], vb = b.dataset[key];
+        if (va === undefined || vb === undefined) return 0;
+        var cmp;
+        if (isNumeric[key]) {
+          cmp = Number(va) - Number(vb);
+        } else {
+          cmp = va.localeCompare(vb);
+        }
+        return asc ? cmp : -cmp;
+      });
+      rows.forEach(function(r) { tbody.appendChild(r); });
+    }
+
+    document.querySelectorAll('.sort-th').forEach(function(th) {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', function() {
+        var key = th.dataset.sort;
+        if (!key) return;
+        var asc = currentSort.key === key ? !currentSort.asc : (isNumeric[key] ? true : true);
+        currentSort = { key: key, asc: asc };
+        sortBy(key, asc);
+        // Update arrows
+        document.querySelectorAll('.sort-arrow').forEach(function(a) { a.textContent = ''; });
+        th.querySelector('.sort-arrow').textContent = asc ? ' ▲' : ' ▼';
+      });
+    });
+
+    // Initial sort: type (garden first)
+    sortBy('type', true);
+    var typeTh = document.querySelector('[data-sort="type"]');
+    if (typeTh) typeTh.querySelector('.sort-arrow').textContent = ' ▲';
+  })();
 </script>
 
 <style>
@@ -635,6 +688,10 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
   .gardentable a:hover { color: var(--accent); }
   .gardentable td:nth-child(2) { max-width: 200px; }
   .gardentable td:nth-child(2) a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .sort-th { cursor: pointer; user-select: none; }
+  .sort-th:hover { color: var(--accent); }
+  .sort-arrow { font-size: 0.7em; }
 
   .type-chip {
     font-size: 0.75rem;

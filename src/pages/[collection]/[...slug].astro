@@ -12,16 +12,40 @@ const entries = await getCollection(collection as CollectionName, ({ data }) => 
 const entry = entries.find((e) => e.id === slug);
 if (!entry) return new Response('Not found', { status: 404 });
 
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const title = entry.data.seoTitle ?? entry.data.title;
 const description = entry.data.seoDescription ?? entry.data.description;
+
+// TOC: filter h2/h3 with slugs
+const toc = headings.filter((h) => h.depth <= 3 && h.slug).slice(0, 12);
 
 const allEntries: AnyEntry[] = [
   ...(await getCollection('notes', ({ data }) => !data.draft)),
   ...(await getCollection('garden', ({ data }) => !data.draft)),
   ...(await getCollection('articles', ({ data }) => !data.draft)),
 ];
-const related = [...getExplicitRelated(entry as AnyEntry, allEntries), ...getTagRelated(entry as AnyEntry, allEntries, 4)].filter(
+
+// Parse body for implicit backlinks (links to other entries)
+function extractBodyLinks(rawBody: string): string[] {
+  const links: string[] = [];
+  const re = /\[([^\]]*)\]\(\/([^)\s]+)\/?\)/g;
+  let m;
+  while ((m = re.exec(rawBody)) !== null) {
+    links.push(m[2]); // e.g. "notes/redis" or "articles/some-post"
+  }
+  return links;
+}
+const bodyLinks = entry.body ? extractBodyLinks(entry.body) : [];
+const implicitRelated = allEntries.filter((e) =>
+  bodyLinks.some((link) => {
+    const full = `${e.collection}/${e.id}`;
+    return link === full || link === e.id;
+  })
+);
+
+const explicitRelated = getExplicitRelated(entry as AnyEntry, allEntries);
+const tagRelated = getTagRelated(entry as AnyEntry, allEntries, 4);
+const related = [...explicitRelated, ...implicitRelated, ...tagRelated].filter(
   (e, i, arr) => arr.findIndex((x) => x.id === e.id) === i
 ).slice(0, 6);
 const upstream = getUpstream(entry as AnyEntry, allEntries);
@@ -49,6 +73,18 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     <div class="garden-cta">
       <a href="/garden/">🌱 在数字花园中查看关联</a>
     </div>
+    {toc.length > 0 && (
+      <nav class="toc" aria-label="Table of contents">
+        <h2>目录</h2>
+        <ol>
+          {toc.map((h) => (
+            <li class={`toc-depth-${h.depth}`}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
     <Content />
     <footer class="prose-footer">
       {(related.length > 0 || upstream.length > 0) && (
@@ -132,6 +168,44 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     border-color: var(--accent);
     color: var(--accent);
   }
+
+  .toc {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-soft);
+  }
+
+  .toc h2 {
+    margin: 0 0 10px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .toc ol {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .toc li {
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .toc-depth-2 { font-weight: 600; }
+  .toc-depth-3 { padding-left: 16px; font-size: 0.9rem; }
+
+  .toc a {
+    text-decoration: none;
+    color: var(--muted);
+    transition: color 0.15s;
+  }
+
+  .toc a:hover { color: var(--accent); }
 
   .garden-cta {
     margin: 12px 0 20px;

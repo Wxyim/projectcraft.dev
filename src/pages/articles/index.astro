@@ -2,10 +2,17 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ContentList from '@/components/ContentList.astro';
 import { collections } from '@/config/site';
-import { getPublishedCollection } from '@/utils/content';
+import { getPublishedCollection, type AnyEntry } from '@/utils/content';
 
 const meta = collections.articles;
 const entries = await getPublishedCollection('articles');
+
+// Load connection scope for real connection counts
+const allEntries: AnyEntry[] = [
+  ...(await getPublishedCollection('notes')),
+  ...(await getPublishedCollection('garden')),
+  ...(await getPublishedCollection('articles')),
+];
 ---
 
 <BaseLayout title={meta.title} description={meta.description}>
@@ -14,6 +21,6 @@ const entries = await getPublishedCollection('articles');
     <p class="lede">{meta.description}</p>
   </section>
   <section class="container section">
-    <ContentList entries={entries} />
+    <ContentList entries={entries} allEntries={allEntries} />
   </section>
 </BaseLayout>

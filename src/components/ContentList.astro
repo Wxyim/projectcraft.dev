@@ -4,9 +4,10 @@ import { collectionLabel, formatDate, getEntryUrl, type AnyEntry } from '@/utils
 interface Props {
   entries: AnyEntry[];
   showCollection?: boolean;
+  allEntries?: AnyEntry[];
 }
 
-const { entries, showCollection = false } = Astro.props;
+const { entries, showCollection = false, allEntries } = Astro.props;
 
 function daysAgo(date: Date): string {
   const diff = Math.floor((Date.now() - date.valueOf()) / 86400000);
@@ -14,12 +15,26 @@ function daysAgo(date: Date): string {
   if (diff === 1) return '1 天前打理';
   return `${diff} 天前打理`;
 }
+
+function getConnCount(entry: AnyEntry, all: AnyEntry[]): number {
+  if (!all || all.length === 0) return 0;
+  const tags = new Set(entry.data.tags);
+  if (tags.size === 0) return 0;
+  const seen = new Set<string>();
+  for (const e of all) {
+    if (e.id === entry.id) continue;
+    if (e.data.tags.some((t) => tags.has(t))) seen.add(`${e.collection}/${e.id}`);
+    if ((e.data.related ?? []).some((r) => r === entry.id || r === `${entry.collection}/${entry.id}`)) seen.add(`${e.collection}/${e.id}`);
+  }
+  return seen.size;
+}
 ---
 
 <div class="entry-list">
   {entries.map((entry) => {
     const lastDate = entry.data.updatedDate ?? entry.data.pubDate;
     const tended = entry.data.updatedDate ? daysAgo(entry.data.updatedDate) : '';
+    const conns = allEntries ? getConnCount(entry, allEntries) : null;
     return (
     <article class="entry">
       <div class="meta">
@@ -29,7 +44,8 @@ function daysAgo(date: Date): string {
       <h2>
         <a href={getEntryUrl(entry)}>{entry.data.title}</a>
         {tended && <span class="tended-badge" title={formatDate(entry.data.updatedDate!)}>{tended}</span>}
-        {entry.data.tags.length > 0 && <span class="tag-count-badge" title={`${entry.data.tags.length} 个标签`}>{entry.data.tags.length} tags</span>}
+        {conns !== null && conns > 0 && <span class="conn-badge" title={`${conns} 个关联条目`}>{conns}</span>}
+        {conns === null && entry.data.tags.length > 0 && <span class="tag-count-badge" title={`${entry.data.tags.length} 个标签`}>{entry.data.tags.length} tags</span>}
       </h2>
       {entry.data.description && <p>{entry.data.description}</p>}
       {entry.data.tags.length > 0 && (
@@ -60,6 +76,16 @@ function daysAgo(date: Date): string {
     padding: 1px 7px;
     border-radius: 999px;
     font-weight: 600;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+  .conn-badge {
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 650;
     margin-left: 8px;
     white-space: nowrap;
   }
