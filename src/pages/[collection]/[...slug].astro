@@ -150,8 +150,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     margin: 4px 0 20px;
   }
 
-  .prose-footer { clear: both; }
-
   .related-notes {
     margin-bottom: 20px;
     padding-bottom: 20px;
@@ -194,21 +192,10 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     padding: 14px 18px;
     border: 1px solid var(--line);
     border-radius: 10px;
-    background: var(--bg-soft);
-  }
-
-  @media (min-width: 900px) {
-    .toc {
-      float: right;
-      position: sticky;
-      top: 80px;
-      width: 220px;
-      margin-left: 32px;
-      margin-bottom: 32px;
-      max-height: calc(100vh - 120px);
-      overflow-y: auto;
-      z-index: 1;
-    }
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   .toc h2 {
