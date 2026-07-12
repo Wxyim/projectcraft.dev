@@ -19,6 +19,7 @@ const description = entry.data.seoDescription ?? entry.data.description;
 const allEntries: AnyEntry[] = [
   ...(await getCollection('notes', ({ data }) => !data.draft)),
   ...(await getCollection('garden', ({ data }) => !data.draft)),
+  ...(await getCollection('articles', ({ data }) => !data.draft)),
 ];
 const related = [...getExplicitRelated(entry as AnyEntry, allEntries), ...getTagRelated(entry as AnyEntry, allEntries, 4)].filter(
   (e, i, arr) => arr.findIndex((x) => x.id === e.id) === i
