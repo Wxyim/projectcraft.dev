@@ -74,9 +74,12 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
       <a href="/garden/">🌱 在数字花园中查看关联</a>
     </div>
     {toc.length > 0 && (
-      <nav class="toc" aria-label="Table of contents">
-        <h2>目录</h2>
-        <ol>
+      <nav class="toc" aria-label="Table of contents" id="toc-nav" data-expanded="false">
+        <button class="toc-toggle" type="button" aria-expanded="false">
+          <h2>目录</h2>
+          <span class="toc-arrow">▸</span>
+        </button>
+        <ol class="toc-list">
           {toc.map((h) => (
             <li class={`toc-depth-${h.depth}`}>
               <a href={`#${h.slug}`}>{h.text}</a>
@@ -123,6 +126,19 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   </article>
   {toc.length > 0 && (
     <script>
+      // Toggle expand/collapse
+      (function() {
+        const nav = document.getElementById('toc-nav');
+        const btn = nav?.querySelector('.toc-toggle');
+        if (!nav || !btn) return;
+        btn.addEventListener('click', function() {
+          const expanded = nav.dataset.expanded === 'true';
+          nav.dataset.expanded = expanded ? 'false' : 'true';
+          btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        });
+      })();
+
+      // Scroll highlight
       const tocLinks = document.querySelectorAll('.toc a');
       const headings = Array.from(tocLinks).map((a) => document.getElementById(a.getAttribute('href')?.slice(1) || '')).filter(Boolean);
       const observer = new IntersectionObserver((entries) => {
@@ -189,27 +205,59 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
   .toc {
     margin: 0 0 24px;
-    padding: 14px 18px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--bg);
     position: sticky;
     top: 0;
     z-index: 10;
+    overflow: hidden;
   }
 
-  .toc h2 {
-    margin: 0 0 10px;
+  .toc-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 18px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+
+  .toc-toggle h2 {
+    margin: 0;
     font-size: 0.82rem;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
-  .toc ol {
+  .toc-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+    color: var(--muted);
+  }
+
+  .toc[data-expanded="true"] .toc-arrow {
+    transform: rotate(90deg);
+  }
+
+  .toc-list {
     margin: 0;
-    padding-left: 0;
+    padding: 0 18px;
     list-style: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, padding-bottom 0.25s ease;
+  }
+
+  .toc[data-expanded="true"] .toc-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-bottom: 14px;
   }
 
   .toc li {
