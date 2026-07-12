@@ -12,19 +12,7 @@ const allEntries: AnyEntry[] = [...gardenEntries, ...notesEntries, ...articlesEn
 // Utility: sort entries: garden first, then by maturity within each type
 const collOrder: Record<string, number> = { garden: 0, notes: 1, articles: 2 };
 const statusOrder: Record<string, number> = { evergreen: 0, budding: 1, seedling: 2 };
-function sortByTypeMaturity(a: AnyEntry, b: AnyEntry): number {
-  const ca = collOrder[a.collection] ?? 2;
-  const cb = collOrder[b.collection] ?? 2;
-  if (ca !== cb) return ca - cb;
-  const sa: string = (a.data as any).status || (a.collection === 'garden' ? 'seedling' : '');
-  const sb: string = (b.data as any).status || (b.collection === 'garden' ? 'seedling' : '');
-  const statusDiff = (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
-  if (statusDiff !== 0) return statusDiff;
-  return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
-}
-
-// Graph & List: pubDate first, then maturity (for garden entries)
-function sortByTypeDate(a: AnyEntry, b: AnyEntry): number {
+function sortEntries(a: AnyEntry, b: AnyEntry): number {
   const ca = collOrder[a.collection] ?? 2;
   const cb = collOrder[b.collection] ?? 2;
   if (ca !== cb) return ca - cb;
@@ -35,14 +23,14 @@ function sortByTypeDate(a: AnyEntry, b: AnyEntry): number {
   return (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
 }
 
-allEntries.sort(sortByTypeDate);
+allEntries.sort(sortEntries);
 
 // Build tree: branch sort by garden-first, then latest pubDate desc
-// Within branch: type → maturity → pubDate desc
+// Within branch: type → pubDate → maturity
 const tree = buildTagTree(allEntries)
   .map((branch) => ({
     ...branch,
-    entries: [...branch.entries].sort(sortByTypeMaturity)
+    entries: [...branch.entries].sort(sortEntries)
   }))
   .sort((a, b) => {
     // Priority by best collection type in branch: garden(0) > notes(1) > articles(2)
