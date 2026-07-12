@@ -55,16 +55,19 @@ function outgoingConn(e: AnyEntry): number {
 }
 
 function entryStatus(entry: AnyEntry): string {
-  return (entry.data as any).status || (entry.collection === 'notes' ? '' : 'seedling');
+  if (entry.collection === 'notes' || entry.collection === 'articles') return '';
+  return (entry.data as any).status || 'seedling';
 }
 function statusIcon(entry: AnyEntry): string {
+  if (entry.collection === 'articles') return '📄';
   const s = entryStatus(entry);
   if (s === 'evergreen') return '🌳';
   if (s === 'budding') return '🌿';
   if (s === 'seedling') return '🌱';
   return '📝';
 }
-function statusLabel(s: string): string {
+function statusLabel(s: string, entry?: AnyEntry): string {
+  if (entry?.collection === 'articles') return 'Article';
   if (s === 'evergreen') return 'Evergreen';
   if (s === 'budding') return 'Budding';
   if (s === 'seedling') return 'Seedling';
@@ -115,6 +118,7 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
       <span class="status-chip budding">🌿 {buddingCount} budding</span>
       <span class="status-chip evergreen">🌳 {evergreenCount} evergreen</span>
       <span class="status-chip note">📝 {notesEntries.length} notes</span>
+      <span class="status-chip article">📄 {articlesEntries.length} articles</span>
     </div>
     <p class="section-lede" style="margin-top: 10px;">内容从刚种下的想法开始，随着每次更新逐渐成形，最终沉淀为长期维护的成熟笔记。</p>
   </section>
@@ -148,9 +152,9 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
                 const tendedLabel = daysAgo === 0 ? '今天打理' : `${daysAgo} 天前打理`;
                 return (
                   <a class="tree-leaf" href={getEntryUrl(entry)} title={tendedLabel}>
-                    <span class="leaf-status" title={statusLabel(st)}>{statusIcon(entry)}</span>
+                    <span class="leaf-status" title={statusLabel(st, entry)}>{statusIcon(entry)}</span>
                     <span class="leaf-title">{entry.data.title}</span>
-                    {st && st !== 'evergreen' && <span class={`growth-dot ${st}`} title={statusLabel(st)}></span>}
+                    {st && st !== 'evergreen' && <span class={`growth-dot ${st}`} title={statusLabel(st, entry)}></span>}
                     {entry.data.updatedDate && <span class="tended-badge" title={tendedLabel}>{daysAgo === 0 ? '今天' : `${daysAgo}d`}</span>}
                     <span class="link-count strength-{Math.min(count, 5)}" title={`${count} connections`}>{count}</span>
                   </a>
@@ -368,6 +372,7 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
   .status-chip.budding { border-color: #5eacb5; color: #3d808a; }
   .status-chip.evergreen { border-color: #4a9a4a; color: #2d7a2d; background: #e8f5e8; }
   .status-chip.note { border-color: var(--line); color: var(--muted); }
+  .status-chip.article { border-color: var(--line); color: var(--muted); }
 
   /* Growth dot indicator in tree */
   .growth-dot {
