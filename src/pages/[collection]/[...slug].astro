@@ -165,13 +165,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         window.addEventListener('scroll', function() {
           var scrollY = window.scrollY;
 
-          // Shrink TOC button
-          if (scrollY > 200 && !float.classList.contains('shrunk')) {
-            float.classList.add('shrunk');
-          } else if (scrollY <= 200 && float.classList.contains('shrunk')) {
-            float.classList.remove('shrunk');
-          }
-
           // Back to top visibility
           if (backTop) {
             if (scrollY > 300) {
@@ -301,13 +294,10 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   /* TOC button */
   .toc-btn {
     bottom: 80px;
+    opacity: 0.7;
   }
 
-  .toc-float.shrunk .toc-btn {
-    opacity: 0.6;
-  }
-
-  .toc-float.shrunk .toc-btn:hover {
+  .toc-btn:hover {
     opacity: 1;
   }
 
