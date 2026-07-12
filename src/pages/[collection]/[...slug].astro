@@ -73,21 +73,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     <div class="garden-cta">
       <a href="/garden/">🌱 在数字花园中查看关联</a>
     </div>
-    {toc.length > 0 && (
-      <nav class="toc" aria-label="Table of contents" id="toc-nav" data-expanded="false">
-        <button class="toc-toggle" type="button" aria-expanded="false">
-          <h2>目录</h2>
-          <span class="toc-arrow">▸</span>
-        </button>
-        <ol class="toc-list">
-          {toc.map((h) => (
-            <li class={`toc-depth-${h.depth}`}>
-              <a href={`#${h.slug}`}>{h.text}</a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-    )}
     <Content />
     <footer class="prose-footer">
       {(related.length > 0 || upstream.length > 0) && (
@@ -125,35 +110,81 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     </footer>
   </article>
   {toc.length > 0 && (
+    <>
+    <aside class="toc-float" id="toc-float" aria-label="Table of contents">
+      <button class="toc-float-btn" id="toc-float-btn" type="button" aria-expanded="false" title="目录">
+        <span class="toc-float-icon">☰</span>
+        <span class="toc-float-label">目录</span>
+      </button>
+      <nav class="toc-panel" id="toc-panel">
+        <ol>
+          {toc.map((h) => (
+            <li class={`toc-depth-${h.depth}`}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
     <script>
-      // Toggle expand/collapse
       (function() {
-        const nav = document.getElementById('toc-nav');
-        const btn = nav?.querySelector('.toc-toggle');
-        if (!nav || !btn) return;
-        btn.addEventListener('click', function() {
-          const expanded = nav.dataset.expanded === 'true';
-          nav.dataset.expanded = expanded ? 'false' : 'true';
-          btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        });
-      })();
+        var float = document.getElementById('toc-float');
+        var btn = document.getElementById('toc-float-btn');
+        var panel = document.getElementById('toc-panel');
+        if (!float || !btn || !panel) return;
 
-      // Scroll highlight
-      const tocLinks = document.querySelectorAll('.toc a');
-      const headings = Array.from(tocLinks).map((a) => document.getElementById(a.getAttribute('href')?.slice(1) || '')).filter(Boolean);
-      const observer = new IntersectionObserver((entries) => {
-        let activeId = null;
-        for (const e of entries) {
-          if (e.isIntersecting) { activeId = e.target.id; break; }
-        }
-        if (activeId) {
-          tocLinks.forEach((a) => a.style.color = '');
-          const active = document.querySelector('.toc a[href="#' + CSS.escape(activeId) + '"]');
-          if (active) active.style.color = 'var(--accent)';
-        }
-      }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
-      headings.forEach((h) => observer.observe(h));
+        var expanded = false;
+        btn.addEventListener('click', function() {
+          expanded = !expanded;
+          float.dataset.expanded = expanded ? 'true' : 'false';
+          btn.setAttribute('aria-expanded', String(expanded));
+        });
+
+        // Close panel when clicking a link
+        panel.querySelectorAll('a').forEach(function(link) {
+          link.addEventListener('click', function() {
+            expanded = false;
+            float.dataset.expanded = 'false';
+            btn.setAttribute('aria-expanded', 'false');
+          });
+        });
+
+        // Shrink on scroll
+        var lastScrollY = 0;
+        var ticking = false;
+        window.addEventListener('scroll', function() {
+          if (!ticking) {
+            requestAnimationFrame(function() {
+              var scrollY = window.scrollY;
+              if (scrollY > 300 && !float.classList.contains('shrunk')) {
+                float.classList.add('shrunk');
+              } else if (scrollY <= 300 && float.classList.contains('shrunk')) {
+                float.classList.remove('shrunk');
+              }
+              ticking = false;
+            });
+            ticking = true;
+          }
+        }, { passive: true });
+
+        // Scroll highlight
+        var tocLinks = panel.querySelectorAll('a');
+        var headings = Array.from(tocLinks).map(function(a) { return document.getElementById(a.getAttribute('href')?.slice(1) || ''); }).filter(Boolean);
+        var observer = new IntersectionObserver(function(entries) {
+          var activeId = null;
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) { activeId = entries[i].target.id; break; }
+          }
+          if (activeId) {
+            tocLinks.forEach(function(a) { a.style.color = ''; });
+            var active = panel.querySelector('a[href="#' + CSS.escape(activeId) + '"]');
+            if (active) active.style.color = 'var(--accent)';
+          }
+        }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+        headings.forEach(function(h) { observer.observe(h); });
+      })();
     </script>
+    </>
   )}
 </BaseLayout>
 
@@ -203,80 +234,95 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     color: var(--accent);
   }
 
-  .toc {
-    margin: 0 0 24px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--bg);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    overflow: hidden;
+  /* Floating TOC */
+  .toc-float {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
   }
 
-  .toc-toggle {
+  .toc-float-btn {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 18px;
-    border: none;
-    background: none;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--muted);
     cursor: pointer;
-    font: inherit;
-    color: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.25s;
+    white-space: nowrap;
   }
 
-  .toc-toggle h2 {
-    margin: 0;
-    font-size: 0.82rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  .toc-float-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
-  .toc-arrow {
-    font-size: 0.7rem;
-    transition: transform 0.2s;
-    color: var(--muted);
+  .toc-float.shrunk .toc-float-label { display: none; }
+  .toc-float.shrunk .toc-float-btn {
+    padding: 8px 10px;
+    font-size: 1rem;
   }
 
-  .toc[data-expanded="true"] .toc-arrow {
-    transform: rotate(90deg);
+  .toc-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 260px;
+    max-height: 0;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transition: max-height 0.25s ease, padding 0.25s ease;
   }
 
-  .toc-list {
+  .toc-float[data-expanded="true"] .toc-panel {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .toc-panel ol {
     margin: 0;
     padding: 0 18px;
     list-style: none;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.25s ease, padding-bottom 0.25s ease;
   }
 
-  .toc[data-expanded="true"] .toc-list {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-bottom: 14px;
-  }
-
-  .toc li {
+  .toc-panel li {
     margin-bottom: 4px;
     line-height: 1.4;
   }
 
   .toc-depth-2 { font-weight: 600; }
-  .toc-depth-3 { padding-left: 16px; font-size: 0.9rem; }
+  .toc-depth-3 { padding-left: 14px; font-size: 0.88rem; }
 
-  .toc a {
+  .toc-panel a {
     display: block;
     text-decoration: none;
     color: var(--muted);
     transition: color 0.15s;
-    padding: 2px 0;
+    padding: 3px 0;
+    font-size: 0.85rem;
   }
 
-  .toc a:hover { color: var(--accent); }
+  .toc-panel a:hover { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .toc-float { right: 10px; }
+    .toc-panel { width: 240px; }
+  }
 
   .garden-cta {
     margin: 12px 0 20px;
