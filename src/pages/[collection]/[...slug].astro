@@ -73,19 +73,21 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     <div class="garden-cta">
       <a href="/garden/">🌱 在数字花园中查看关联</a>
     </div>
-    {toc.length > 0 && (
-      <nav class="toc" aria-label="Table of contents">
-        <h2>目录</h2>
-        <ol>
-          {toc.map((h) => (
-            <li class={`toc-depth-${h.depth}`}>
-              <a href={`#${h.slug}`}>{h.text}</a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-    )}
-    <Content />
+    <div class="prose-body">
+      <Content />
+      {toc.length > 0 && (
+        <nav class="toc" aria-label="Table of contents">
+          <h2>目录</h2>
+          <ol>
+            {toc.map((h) => (
+              <li class={`toc-depth-${h.depth}`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+    </div>
     <footer class="prose-footer">
       {(related.length > 0 || upstream.length > 0) && (
         <nav class="related-notes" aria-label="Related notes">
@@ -121,6 +123,24 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
       <div class="giscus-wrapper"><Giscus /></div>
     </footer>
   </article>
+  {toc.length > 0 && (
+    <script>
+      const tocLinks = document.querySelectorAll('.toc a');
+      const headings = Array.from(tocLinks).map((a) => document.getElementById(a.getAttribute('href')?.slice(1) || '')).filter(Boolean);
+      const observer = new IntersectionObserver((entries) => {
+        let activeId = null;
+        for (const e of entries) {
+          if (e.isIntersecting) { activeId = e.target.id; break; }
+        }
+        if (activeId) {
+          tocLinks.forEach((a) => a.style.color = '');
+          const active = document.querySelector('.toc a[href="#' + CSS.escape(activeId) + '"]');
+          if (active) active.style.color = 'var(--accent)';
+        }
+      }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+      headings.forEach((h) => observer.observe(h));
+    </script>
+  )}
 </BaseLayout>
 
 <style>
@@ -169,17 +189,44 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     color: var(--accent);
   }
 
+  .prose-body {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .prose-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .prose-body > :first-child { min-width: 0; }
+
   .toc {
-    margin: 0 0 24px;
+    position: sticky;
+    top: 80px;
     padding: 14px 18px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--bg-soft);
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  @media (max-width: 768px) {
+    .toc {
+      position: static;
+      max-height: none;
+      order: -1;
+      margin-top: 24px;
+    }
   }
 
   .toc h2 {
     margin: 0 0 10px;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -197,12 +244,14 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   }
 
   .toc-depth-2 { font-weight: 600; }
-  .toc-depth-3 { padding-left: 16px; font-size: 0.9rem; }
+  .toc-depth-3 { padding-left: 14px; font-size: 0.85rem; }
 
   .toc a {
+    display: block;
     text-decoration: none;
     color: var(--muted);
     transition: color 0.15s;
+    padding: 2px 0;
   }
 
   .toc a:hover { color: var(--accent); }
