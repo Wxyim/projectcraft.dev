@@ -228,7 +228,7 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
 
     <!-- List View -->
     <div class="tab-panel" id="tab-list">
-      <p class="section-lede">全部卡片的表格视图，点击列标题排序。</p>
+      <p class="section-lede">全部卡片的表格视图，点击列标题排序。<button class="reset-sort" id="reset-sort" type="button">恢复默认排序</button></p>
       <div class="gardentable-wrapper">
         <table class="gardentable" id="list-table">
           <thead>
@@ -335,7 +335,8 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
     var tbody = document.getElementById('list-tbody');
     if (!tbody) return;
     var rows = Array.from(tbody.querySelectorAll('tr'));
-    var currentSort = { key: 'type', asc: true }; // default: garden first
+    var initialOrder = rows.slice(); // snapshot of server order
+    var currentSort = { key: null, asc: true };
     var isNumeric = { planted: true, tended: true, out: true, in: true, type: true, status: true };
 
     function sortBy(key, asc) {
@@ -351,6 +352,18 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
         return asc ? cmp : -cmp;
       });
       rows.forEach(function(r) { tbody.appendChild(r); });
+    }
+
+    function resetSort() {
+      initialOrder.forEach(function(r) { tbody.appendChild(r); });
+      rows = Array.from(tbody.querySelectorAll('tr'));
+      currentSort = { key: null, asc: true };
+      document.querySelectorAll('.sort-arrow').forEach(function(a) { a.textContent = ''; });
+    }
+
+    var resetBtn = document.getElementById('reset-sort');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetSort);
     }
 
     document.querySelectorAll('.sort-th').forEach(function(th) {
@@ -707,4 +720,22 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
   .conn-th { text-align: center; }
   .conn-cell { text-align: center; font-weight: 600; color: var(--accent); font-size: 0.85rem; }
   .orphan-row td { opacity: 0.55; }
+
+  .reset-sort {
+    margin-left: 12px;
+    padding: 2px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .reset-sort:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 </style>
