@@ -23,11 +23,18 @@ function sortByTypeMaturity(a: AnyEntry, b: AnyEntry): number {
 
 allEntries.sort(sortByTypeMaturity);
 
-// Build tree (each branch also sorted by type + maturity)
-const tree = buildTagTree(allEntries).map((branch) => ({
-  ...branch,
-  entries: [...branch.entries].sort(sortByTypeMaturity)
-}));
+// Build tree (branch with garden entries first, then by count desc; within branch sorted by type + maturity)
+const tree = buildTagTree(allEntries)
+  .map((branch) => ({
+    ...branch,
+    entries: [...branch.entries].sort(sortByTypeMaturity)
+  }))
+  .sort((a, b) => {
+    const aHasGarden = a.entries.some((e) => e.collection === 'garden');
+    const bHasGarden = b.entries.some((e) => e.collection === 'garden');
+    if (aHasGarden !== bHasGarden) return aHasGarden ? -1 : 1;
+    return b.entries.length - a.entries.length;
+  });
 
 // Connection stats
 const connMap = new Map<string, { explicit: AnyEntry[]; tagRelated: AnyEntry[]; upstream: AnyEntry[]; overlapMap: Map<string, number> }>();
