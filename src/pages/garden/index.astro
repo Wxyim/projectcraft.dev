@@ -18,12 +18,15 @@ function sortByTypeMaturity(a: AnyEntry, b: AnyEntry): number {
   if (ca !== cb) return ca - cb;
   const sa: string = (a.data as any).status || (a.collection === 'garden' ? 'seedling' : '');
   const sb: string = (b.data as any).status || (b.collection === 'garden' ? 'seedling' : '');
-  return (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
+  const statusDiff = (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
+  if (statusDiff !== 0) return statusDiff;
+  return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
 }
 
 allEntries.sort(sortByTypeMaturity);
 
-// Build tree (branch with garden entries first, then by count desc; within branch sorted by type + maturity)
+// Build tree: branch sort by garden-first, then latest pubDate desc
+// Within branch: type → maturity → pubDate desc
 const tree = buildTagTree(allEntries)
   .map((branch) => ({
     ...branch,
@@ -33,7 +36,10 @@ const tree = buildTagTree(allEntries)
     const aHasGarden = a.entries.some((e) => e.collection === 'garden');
     const bHasGarden = b.entries.some((e) => e.collection === 'garden');
     if (aHasGarden !== bHasGarden) return aHasGarden ? -1 : 1;
-    return b.entries.length - a.entries.length;
+    // Latest pubDate in each branch
+    const aLatest = Math.max(...a.entries.map((e) => e.data.pubDate.valueOf()));
+    const bLatest = Math.max(...b.entries.map((e) => e.data.pubDate.valueOf()));
+    return bLatest - aLatest;
   });
 
 // Connection stats
@@ -360,10 +366,6 @@ const evergreenCount = gardenWithStatus.filter((e) => (e.data as any).status ===
       });
     });
 
-    // Initial sort: type (garden first)
-    sortBy('type', true);
-    var typeTh = document.querySelector('[data-sort="type"]');
-    if (typeTh) typeTh.querySelector('.sort-arrow').textContent = ' ▲';
   })();
 </script>
 
