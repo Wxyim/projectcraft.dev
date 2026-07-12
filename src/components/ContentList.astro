@@ -4,10 +4,11 @@ import { collectionLabel, formatDate, getEntryUrl, type AnyEntry } from '@/utils
 interface Props {
   entries: AnyEntry[];
   showCollection?: boolean;
+  showGardenLink?: boolean;
   allEntries?: AnyEntry[];
 }
 
-const { entries, showCollection = false, allEntries } = Astro.props;
+const { entries, showCollection = false, showGardenLink = false, allEntries } = Astro.props;
 
 function daysAgo(date: Date): string {
   const diff = Math.floor((Date.now() - date.valueOf()) / 86400000);
@@ -44,8 +45,8 @@ function getConnCount(entry: AnyEntry, all: AnyEntry[]): number {
       <h2>
         <a href={getEntryUrl(entry)}>{entry.data.title}</a>
         {tended && <span class="tended-badge" title={formatDate(entry.data.updatedDate!)}>{tended}</span>}
-        {conns !== null && conns > 0 && <span class="conn-badge" title={`${conns} 个关联条目`}>{conns}</span>}
-        {conns === null && entry.data.tags.length > 0 && <span class="tag-count-badge" title={`${entry.data.tags.length} 个标签`}>{entry.data.tags.length} tags</span>}
+        {showGardenLink && conns !== null && conns > 0 && <span class="conn-badge" title={`${conns} 个关联条目`}>{conns}</span>}
+        {!showGardenLink && entry.data.tags.length > 0 && <span class="tag-count-badge" title={`${entry.data.tags.length} 个标签`}>{entry.data.tags.length} tags</span>}
       </h2>
       {entry.data.description && <p>{entry.data.description}</p>}
       {entry.data.tags.length > 0 && (
@@ -56,9 +57,11 @@ function getConnCount(entry: AnyEntry, all: AnyEntry[]): number {
     </article>
     );
   })}
-  <div class="garden-link">
-    <a href="/garden/#garden-tabs">🌱 在数字花园中浏览关联 →</a>
-  </div>
+  {showGardenLink && (
+    <div class="garden-link">
+      <a href="/garden/#garden-tabs">🌱 在数字花园中浏览关联 →</a>
+    </div>
+  )}
 </div>
 
 <style>

@@ -4,11 +4,10 @@ description: 网站迁移到了 projectcraft.dev
 pubDate: 2025-08-25
 updatedDate: 2026-07-09
 tags:
-  - Blog
   - Announcement
 draft: false
 ---
-### 简介
+### 公告
 
 　　网站现已迁移至 projectcraft.dev，原有 Astro 主题已存档。
 
