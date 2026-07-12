@@ -153,6 +153,13 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
           link.addEventListener('click', close);
         });
 
+        // Close panel when clicking outside
+        document.addEventListener('click', function(e) {
+          if (expanded && !float.contains(e.target)) {
+            close();
+          }
+        });
+
         // Scroll handler: shrink, back-to-top visibility, auto-close TOC
         var lastScrollY = 0;
         window.addEventListener('scroll', function() {
@@ -293,12 +300,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
   /* TOC button */
   .toc-btn {
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  .toc-btn:hover {
-    transform: translateY(-50%) scale(1.05);
+    bottom: 80px;
   }
 
   .toc-float.shrunk .toc-btn {
@@ -313,8 +315,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   .toc-panel {
     position: fixed;
     right: 68px;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 80px;
     width: 260px;
     max-height: 0;
     overflow: hidden;
