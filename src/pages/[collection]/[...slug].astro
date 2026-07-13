@@ -212,15 +212,21 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         }
       });
 
-      // Scroll handler: auto-close TOC on scroll
-        var lastScrollY = 0;
-        window.addEventListener('scroll', function() {
-          var scrollY = window.scrollY;
-          if (expanded && scrollY !== lastScrollY) {
-            close();
-          }
-          lastScrollY = scrollY;
-        }, { passive: true });
+      // Scroll handler: auto-close TOC on scroll + drop focus from the
+      // floating buttons. On touch devices the browser can leave a button
+      // in :focus / stuck :hover after a tap that didn't fire a click
+      // (long press, scroll-after-tap). Blurring on scroll is the cheapest
+      // way to clear that visual state.
+      var lastScrollY = 0;
+      window.addEventListener('scroll', function() {
+        var scrollY = window.scrollY;
+        if (expanded && scrollY !== lastScrollY) {
+          close();
+        }
+        if (btn && document.activeElement === btn) btn.blur();
+        if (backTop && document.activeElement === backTop) backTop.blur();
+        lastScrollY = scrollY;
+      }, { passive: true });
 
         // Back to top: click + scroll-based visibility
         if (backTop) {
@@ -442,10 +448,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     transition: box-shadow 0.25s, opacity 0.25s;
   }
 
-  .float-btn:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-  }
-
   /* Suppress the default click-time focus ring on mouse activation.
      Keyboard users still get an indicator via :focus-visible. */
   .float-btn:focus {
@@ -457,18 +459,19 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     outline-offset: 3px;
   }
 
+  /* :hover can stick on touch devices (iOS doesn't fire mouseleave after a
+     tap). Scope all :hover effects to real hover-capable pointers so a tap
+     never leaves the button stuck in its hover state. */
+  @media (hover: hover) {
+    .float-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+    .toc-btn:hover { opacity: 1; }
+    .scroll-control.visible:hover { opacity: 1; }
+  }
+
   /* TOC button */
   .toc-btn {
     bottom: 80px;
     opacity: 0.7;
-  }
-
-  .toc-btn:hover {
-    opacity: 1;
-  }
-
-  .toc-btn:hover {
-    opacity: 1;
   }
 
   /* TOC panel */
@@ -530,10 +533,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   .scroll-control.visible {
     opacity: 0.7;
     pointer-events: auto;
-  }
-
-  .scroll-control.visible:hover {
-    opacity: 1;
   }
 
   @media (max-width: 768px) {
