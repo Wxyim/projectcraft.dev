@@ -543,6 +543,10 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   @media (max-width: 480px) {
     .toc-panel {
       width: calc(100vw - 40px);
+      /* On phones the panel is near-full-width, so anchor its bottom to
+         the top of the TOC button (button bottom 80px + height 42px + 8px
+         gap) for a dropdown-style expand. */
+      bottom: calc(80px + 42px + 8px);
     }
   }
 
