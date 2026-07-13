@@ -561,6 +561,13 @@ input {
   padding: 0.1em 0.35em;
   font-family: var(--font-mono);
   font-variant-ligatures: none;
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+
+.prose pre code {
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .search-box {
