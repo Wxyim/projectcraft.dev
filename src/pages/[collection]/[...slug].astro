@@ -152,13 +152,21 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
       // Position float buttons relative to content area
       var MAX_WIDTH = 1080;
       var GAP = 20;
+      // Mirrors the @media (max-width: 480px) breakpoint in the panel CSS,
+      // where the panel switches to width: calc(100vw - 64px). With the
+      // regular (right + 48) offset that would push the left edge 4px past
+      // the viewport, so we drop the +48 and align with the button.
+      var PANEL_FULL_WIDTH_BP = 480;
       function updatePositions() {
         var vw = window.innerWidth;
         var right = vw <= MAX_WIDTH + GAP * 2 ? GAP : Math.floor((vw - MAX_WIDTH) / 2) + GAP;
         var btns = document.querySelectorAll('.float-btn');
         btns.forEach(function(b) { b.style.right = right + 'px'; });
         var panel = document.getElementById('toc-panel');
-        if (panel) panel.style.right = (right + 48) + 'px';
+        if (panel) {
+          var panelRight = vw <= PANEL_FULL_WIDTH_BP ? right : (right + 48);
+          panel.style.right = panelRight + 'px';
+        }
       }
       updatePositions();
       window.addEventListener('resize', updatePositions);
@@ -535,7 +543,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
   @media (max-width: 480px) {
     .toc-panel {
-      width: calc(100vw - 64px);
+      width: calc(100vw - 40px);
     }
   }
 
