@@ -199,11 +199,34 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
           lastScrollY = scrollY;
         }, { passive: true });
 
-        // Back to top click
+        // Back to top: click + scroll-based visibility
         if (backTop) {
           backTop.addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           });
+
+          // Show after scrolling past one full viewport (≈ one section).
+          // Use IntersectionObserver instead of the scroll event — Firefox
+          // Android's scroll event firing is unreliable during momentum
+          // scrolling, so a scroll listener often never fires at all.
+          if ('IntersectionObserver' in window) {
+            var bttSentinel = document.createElement('div');
+            bttSentinel.setAttribute('aria-hidden', 'true');
+            bttSentinel.style.cssText = 'position:absolute;top:100vh;left:0;width:1px;height:1px;pointer-events:none;';
+            document.body.prepend(bttSentinel);
+            var bttObserver = new IntersectionObserver(function(entries) {
+              entries.forEach(function(entry) {
+                // boundingClientRect.top < 0 ⇒ sentinel has scrolled above viewport
+                backTop.classList.toggle('visible', entry.boundingClientRect.top < 0);
+              });
+            }, { threshold: 0 });
+            bttObserver.observe(bttSentinel);
+          } else {
+            // Fallback for very old browsers without IntersectionObserver
+            window.addEventListener('scroll', function() {
+              backTop.classList.toggle('visible', window.scrollY > window.innerHeight);
+            }, { passive: true });
+          }
         }
 
         // Scroll highlight: find topmost visible heading
@@ -382,14 +405,20 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
   .toc-panel a:hover { color: var(--accent); }
 
-  /* Back to top */
+  /* Back to top — hidden until JS adds .visible after scrolling past one viewport */
   .back-to-top {
     bottom: 30px;
-    opacity: 0.7;
+    opacity: 0;
+    pointer-events: none;
     font-weight: 700;
   }
 
-  .back-to-top:hover {
+  .back-to-top.visible {
+    opacity: 0.7;
+    pointer-events: auto;
+  }
+
+  .back-to-top.visible:hover {
     opacity: 1;
   }
 
