@@ -171,16 +171,21 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
       // TOC toggle (only if TOC exists)
       var expanded = false;
       if (float && btn && panel) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
           expanded = !expanded;
           float.dataset.expanded = expanded ? 'true' : 'false';
           btn.setAttribute('aria-expanded', String(expanded));
+          // Drop focus so the button doesn't keep an outline / "stuck hover" look
+          // after the click. Skip blur on keyboard activation so keyboard users
+          // can re-toggle the panel with Enter/Space.
+          if (e.detail !== 0) e.currentTarget.blur();
         });
         panel.querySelectorAll('a').forEach(function(link) {
           link.addEventListener('click', function() {
             expanded = false;
             float.dataset.expanded = 'false';
             btn.setAttribute('aria-expanded', 'false');
+            btn.blur();
           });
         });
       }
@@ -211,8 +216,11 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
         // Back to top: click + scroll-based visibility
         if (backTop) {
-          backTop.addEventListener('click', function() {
+          backTop.addEventListener('click', function(e) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Release focus so the button doesn't keep a focus ring while
+            // the user is reading the top of the page.
+            if (e.detail !== 0) e.currentTarget.blur();
           });
 
           // Keep this independent of IntersectionObserver. Android Firefox can
@@ -428,6 +436,17 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
   .float-btn:hover {
     box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+
+  /* Suppress the default click-time focus ring on mouse activation.
+     Keyboard users still get an indicator via :focus-visible. */
+  .float-btn:focus {
+    outline: none;
+  }
+
+  .float-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 
   /* TOC button */
