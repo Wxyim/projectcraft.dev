@@ -570,6 +570,75 @@ input {
   overflow-wrap: break-word;
 }
 
+/* --- Code block copy button ---
+   The wrapper and button are inserted by JS in [...slug].astro, so the
+   rules must be global — Astro's scoped <style> would not match dynamically
+   created elements. */
+.code-block-wrapper {
+  position: relative;
+  margin: 1.2em 0;
+}
+
+.code-block-wrapper > pre {
+  margin: 0;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.18s ease, color 0.18s ease,
+              background 0.18s ease, border-color 0.18s ease,
+              transform 0.18s ease;
+}
+
+/* Reveal the button when the user is engaging with the code block */
+.code-block-wrapper:hover .copy-code-btn,
+.copy-code-btn:focus-visible,
+.copy-code-btn.copied {
+  opacity: 1;
+}
+
+.copy-code-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.copy-code-btn:active {
+  transform: translateY(0);
+}
+
+.copy-code-btn.copied {
+  color: #16a34a;
+  border-color: rgba(22, 163, 74, 0.4);
+  background: rgba(22, 163, 74, 0.08);
+}
+
+:root.dark .copy-code-btn.copied {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+/* Touch / keyboard only — keep the button discoverable without a hover layer */
+@media (hover: none) {
+  .copy-code-btn { opacity: 1; }
+}
+
 .search-box {
   width: 100%;
   border: 1px solid var(--line);
