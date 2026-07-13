@@ -139,6 +139,20 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   <button class="float-btn back-to-top" id="back-to-top" type="button" title="返回顶部" aria-label="返回顶部">↑</button>
   <script>
     (function() {
+      // Position float buttons relative to content area
+      var MAX_WIDTH = 1080;
+      var GAP = 20;
+      function updatePositions() {
+        var vw = window.innerWidth;
+        var right = vw <= MAX_WIDTH + GAP * 2 ? GAP : Math.floor((vw - MAX_WIDTH) / 2) + GAP;
+        var btns = document.querySelectorAll('.float-btn');
+        btns.forEach(function(b) { b.style.right = right + 'px'; });
+        var panel = document.getElementById('toc-panel');
+        if (panel) panel.style.right = (right + 48) + 'px';
+      }
+      updatePositions();
+      window.addEventListener('resize', updatePositions);
+
       var float = document.getElementById('toc-float');
       var btn = document.getElementById('toc-btn');
       var panel = document.getElementById('toc-panel');
@@ -297,7 +311,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   /* Floating buttons — unified style */
   .float-btn {
     position: fixed;
-    right: 20px;
     z-index: 50;
     width: 42px;
     height: 42px;
@@ -335,7 +348,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   /* TOC panel */
   .toc-panel {
     position: fixed;
-    right: 68px;
     bottom: 80px;
     width: 260px;
     max-height: 0;
@@ -398,14 +410,12 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
   }
 
   @media (max-width: 768px) {
-    .float-btn { right: 10px; }
-    .toc-panel { right: 54px; width: 220px; }
+    .toc-panel { width: 220px; }
     .back-to-top { bottom: 20px; }
   }
 
   @media (max-width: 480px) {
     .toc-panel {
-      right: 10px;
       width: calc(100vw - 64px);
     }
   }
