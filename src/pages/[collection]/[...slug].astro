@@ -123,7 +123,6 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
     </footer>
   </article>
   {toc.length > 0 && (
-    <>
     <aside class="toc-float" id="toc-float" aria-label="Table of contents">
       <button class="float-btn toc-btn" id="toc-btn" type="button" aria-expanded="false" title="目录">☰</button>
       <nav class="toc-panel" id="toc-panel">
@@ -136,44 +135,47 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         </ol>
       </nav>
     </aside>
-    {toc.length > 0 && (
-      <button class="float-btn back-to-top" id="back-to-top" type="button" title="返回顶部" aria-label="返回顶部">↑</button>
     )}
-    <script>
-      (function() {
-        var float = document.getElementById('toc-float');
-        var btn = document.getElementById('toc-btn');
-        var panel = document.getElementById('toc-panel');
-        var backTop = document.getElementById('back-to-top');
-        if (!float || !btn || !panel) return;
+  <button class="float-btn back-to-top" id="back-to-top" type="button" title="返回顶部" aria-label="返回顶部">↑</button>
+  <script>
+    (function() {
+      var float = document.getElementById('toc-float');
+      var btn = document.getElementById('toc-btn');
+      var panel = document.getElementById('toc-panel');
+      var backTop = document.getElementById('back-to-top');
 
-        var expanded = false;
-
-        function close() {
-          expanded = false;
-          float.dataset.expanded = 'false';
-          btn.setAttribute('aria-expanded', 'false');
-        }
-
+      // TOC toggle (only if TOC exists)
+      var expanded = false;
+      if (float && btn && panel) {
         btn.addEventListener('click', function() {
           expanded = !expanded;
           float.dataset.expanded = expanded ? 'true' : 'false';
           btn.setAttribute('aria-expanded', String(expanded));
         });
-
-        // Close panel when clicking a link
         panel.querySelectorAll('a').forEach(function(link) {
-          link.addEventListener('click', close);
+          link.addEventListener('click', function() {
+            expanded = false;
+            float.dataset.expanded = 'false';
+            btn.setAttribute('aria-expanded', 'false');
+          });
         });
+      }
 
-        // Close panel when clicking outside
-        document.addEventListener('click', function(e) {
-          if (expanded && !float.contains(e.target)) {
-            close();
-          }
-        });
+      function close() {
+        if (!float) return;
+        expanded = false;
+        float.dataset.expanded = 'false';
+        btn.setAttribute('aria-expanded', 'false');
+      }
 
-        // Scroll handler: shrink, back-to-top visibility, auto-close TOC
+      // Close panel when clicking outside
+      document.addEventListener('click', function(e) {
+        if (expanded && float && !float.contains(e.target)) {
+          close();
+        }
+      });
+
+      // Scroll handler: back-to-top visibility, auto-close TOC
         var lastScrollY = 0;
         window.addEventListener('scroll', function() {
           var scrollY = window.scrollY;
@@ -202,7 +204,7 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
         }
 
         // Scroll highlight: find topmost visible heading
-        var tocLinks = panel.querySelectorAll('a');
+        var tocLinks = panel ? panel.querySelectorAll('a') : [];
         var headings = Array.from(tocLinks).map(function(a) { return document.getElementById(a.getAttribute('href')?.slice(1) || ''); }).filter(Boolean);
         headings.sort(function(a, b) { return a.offsetTop - b.offsetTop; });
 
@@ -230,20 +232,20 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
           }
 
           tocLinks.forEach(function(a) { a.style.color = ''; });
-          if (bestId && bestOverlap > 0) {
+          if (bestId && bestOverlap > 0 && panel) {
             var link = panel.querySelector('a[href="#' + CSS.escape(bestId) + '"]');
             if (link) link.style.color = 'var(--accent)';
           }
         }
 
-        window.addEventListener('scroll', function() {
-          requestAnimationFrame(updateHighlight);
-        }, { passive: true });
-        updateHighlight();
+        if (headings.length > 0) {
+          window.addEventListener('scroll', function() {
+            requestAnimationFrame(updateHighlight);
+          }, { passive: true });
+          updateHighlight();
+        }
       })();
     </script>
-    </>
-  )}
 </BaseLayout>
 
 <style>
