@@ -600,45 +600,57 @@ const suggestions = getTagRelated(entry as AnyEntry, allEntries, 6)
 
   .copy-code-btn {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 8px;
+    right: 8px;
     z-index: 5;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 6px;
-    background: rgba(128, 128, 128, 0.15);
-    color: rgba(128, 128, 128, 0.7);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--muted);
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    backdrop-filter: blur(4px);
+    opacity: 0.55;
+    transition: opacity 0.18s ease, color 0.18s ease,
+                background 0.18s ease, border-color 0.18s ease,
+                transform 0.18s ease;
   }
 
-  :root.dark .copy-code-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
+  /* Reveal the button when the user is engaging with the code block */
+  .code-block-wrapper:hover .copy-code-btn,
+  .copy-code-btn:focus-visible,
+  .copy-code-btn.copied {
+    opacity: 1;
   }
 
   .copy-code-btn:hover {
-    background: rgba(128, 128, 128, 0.25);
-    color: rgba(128, 128, 128, 0.95);
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
   }
 
-  :root.dark .copy-code-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: rgba(255, 255, 255, 0.8);
+  .copy-code-btn:active {
+    transform: translateY(0);
   }
 
   .copy-code-btn.copied {
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+    border-color: rgba(22, 163, 74, 0.4);
+    background: rgba(22, 163, 74, 0.08);
   }
 
   :root.dark .copy-code-btn.copied {
     color: #4ade80;
-    background: rgba(74, 222, 128, 0.15);
+    border-color: rgba(74, 222, 128, 0.4);
+    background: rgba(74, 222, 128, 0.08);
+  }
+
+  /* Touch / keyboard only — keep the button discoverable without a hover layer */
+  @media (hover: none) {
+    .copy-code-btn { opacity: 1; }
   }
 </style>
